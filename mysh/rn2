@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+me=$(basename "$0")
+ext='*'
+pwd_=$(pwd)
+while test $# -gt 0; do
+ case "$1" in
+  -h|--help)
+   echo "$me - replace STR0 in filenames by STR1 under a directory"
+   echo " "
+   echo "$me [options] STR0 STR1"
+   echo " "
+   echo "options:"
+   echo "-h, --help                show brief help"
+   echo "-p                        specify a path; otherwise applied to current directory!"
+   echo "-v                        verbose mode"
+   exit 0
+   ;;
+  -p)
+   shift
+   if test $# -gt 0; then
+    wkd=$1
+    shift
+   else
+    echo "no path specified; exit"
+    exit 1
+   fi
+   ;;
+  -v)
+   v_=1
+   shift
+   ;;
+  *)
+   if [ "${a0}" ]; then
+    a1="$1"
+   else
+    a0="$1"
+   fi
+   shift
+   ;;
+  esac
+done
+
+if [ "${a0}" ]; then
+ if [ "${wkd}" ]; then
+  cd "${wkd}"
+ fi
+ for i in *"${a0}"*; do
+  tmp_=$(echo "${a0}" | sed 's/\./\\./g')
+  tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/g')
+  if [ "${v_}" ]; then
+   echo 'mv' "'$i'" "'${tmp}'"
+  fi
+  mv "$i" "$tmp"
+ done
+ if [ "${wkd}" ]; then
+  cd ${pwd_}
+ fi
+else
+ echo "STR0 not specified; exit"
+ exit 1
+fi

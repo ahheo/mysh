@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+me=$(basename "$0")
+ext='*'
+ul=l
+pwd_=$(pwd)
+while test $# -gt 0; do
+ case "$1" in
+  -h|--help)
+   echo "$me - change extension case in filename(s)"
+   echo " "
+   echo "$me [options] [DIRECTORY]"
+   echo " "
+   echo "options:"
+   echo "-h, --help                show brief help"
+   echo "-x, --ext=EXT             only applied for files with this extention"
+   echo "-u                        to uppercase"
+   echo "-v                        verbose mode"
+   exit 0
+   ;;
+  -x|--ext)
+   shift
+   if test $# -gt 0; then
+    ext="$1"
+    shift
+   fi
+   ;;
+  --ext*)
+   ext=$(echo $1 | sed -e 's/^[^=]*=//g')
+   shift
+   ;;
+  -u)
+   ul=u
+   shift
+   ;;
+  -v)
+   v_=1
+   shift
+   ;;
+  *)
+   wkd="$1"
+   shift
+   ;;
+ esac
+done
+
+if [ "${wkd}" ]; then
+ cd "${wkd}"
+fi
+
+for i in *.${ext}; do
+ ext_=$(echo "$i" | sed 's/.*\.//')
+ case "${ul}" in
+  U|u)
+   ext__=$(echo "${ext_}" | tr "[a-z]" "[A-Z]")
+   ;;
+  L|l)
+   ext__=$(echo "${ext_}" | tr "[A-Z]" "[a-z]")
+   ;;
+ esac
+ tmp=$(echo "$i" | sed 's/'"${ext_}"'/'"${ext__}"'/g')
+ if [ "${v_}" ]; then
+  echo 'mv' "'$i'" "'${tmp}'"
+ fi
+ mv "$i" "${tmp}"
+done
+
+if [ "${wkd}" ]; then
+ cd ${pwd_}
+fi
+#rn2 "$pd" "x$pd"
