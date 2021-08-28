@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+me=$(basename "$0")
+tag='Model'
+v_=''
+pwd_=$(pwd)
+while test $# -gt 0; do
+ case "$1" in
+  -h|--help)
+   echo "$me - check if is produced by MODEL"
+   echo " "
+   echo "$me [options] MODEL DIR"
+   echo " "
+   echo "options:"
+   echo "-h, --help                show brief help"
+   exit 0
+   ;;
+  -g|--tag)
+   shift
+   if test $# -gt 0; then
+    tag=$1
+    shift
+   fi
+   ;;
+  --tag*)
+   tag=$(echo $1 | sed -e 's/^[^=]*=//g')
+   shift
+   ;;
+  -v)
+   v_='-v'
+   shift
+   ;;
+  *)
+   if [ ${a1+1} ]; then
+    a2=$1
+   elif [ ${a0+1} ]; then
+    a1=$1
+   else
+    a0=$1
+   fi
+   shift
+   ;;
+  esac
+done
+
+if [ "${a0}" ]; then
+ a1=${a1:-${a0}}
+ if [ "${a2}" ]; then
+  echo "cd ${a2}"
+  cd ${a2}
+ fi
+ if [ -z "${v_}" ]; then
+  echo "mkdir -p ${a1}"
+  mkdir -p ${a1}
+ fi
+ for i in *; do
+  if [ -f "$i" ]; then
+   if [[ "$(exiftool -${tag} $i)" == *${a0}* ]]; then
+    if [ "${v_}" ]; then
+     echo "${i} >>>>> YES"
+    else
+     echo "${i} >>>>> YES; mv ${i} ${a1}/"
+     mv ${i} ${a1}/
+    fi
+   else
+    echo "${i} >>>>> no"
+   fi
+  fi
+ done
+ if [ "${a2}" ]; then
+  cd ${pwd_}
+ fi
+else
+ echo "MODEL not specified; exit"
+ exit 1
+fi
