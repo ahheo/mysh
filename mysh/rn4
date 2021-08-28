@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 me=$(basename "$0")
-ext='*'
+#ext='*'
 pwd_=$(pwd)
 while test $# -gt 0; do
  case "$1" in
@@ -28,30 +28,42 @@ while test $# -gt 0; do
    shift
    ;;
   -v)
-   v_=1
+   v_='-v'
    shift
    ;;
   *)
-   wkd="$1"
+   wkd_="$1"
    shift
    ;;
  esac
 done
 
-if [ "${wkd}" ]; then
- cd "${wkd}"
+if [ "${wkd_}" ]; then
+ if [ "${v_}" ]; then
+  echo 'cd '"${wkd_}" 
+ fi
+ cd "${wkd_}"
 fi
 
-for i in *.${ext}; do
- ext_=$(echo "$i" | sed 's/.*\.//')
- tmp=$(echo "$i" | sed 's/'"${ext_}"$'/'"x.${ext_}"'/g')
+for i in [^._]*$([[ "${ext}" ]] && echo ".${ext}" || echo ''); do
+ ext_=$([[ "$i" = *.* ]] && echo "${i##*.}" || echo '')
+ tmp=$i
+ while test -f "${tmp}"; do
+  if [ "${ext_}" ]; then
+   tmp=$(echo "${tmp}" | sed 's/'"\.${ext_}"$'/'"_x.${ext_}"'/')
+  else
+   tmp="${tmp}_x"
+  fi
+ done
  if [ "${v_}" ]; then
   echo 'mv' "'$i'" "'${tmp}'"
  fi
  mv "$i" "${tmp}"
 done
 
-if [ "${wkd}" ]; then
+if [ "${wkd_}" ]; then
+ if [ "${v_}" ]; then
+  echo 'exit' 
+ fi
  cd ${pwd_}
 fi
-#rn2 "$pd" "x$pd"

@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 me=$(basename "$0")
-ext='*'
+#ext='*'
 pwd_=$(pwd)
+#getting arguments now
 while test $# -gt 0; do
  case "$1" in
   -h|--help)
@@ -21,7 +22,7 @@ while test $# -gt 0; do
   -x|--ext)
    shift
    if test $# -gt 0; then
-    ext="$1"
+    ext=$1
     shift
    fi
    ;;
@@ -32,7 +33,7 @@ while test $# -gt 0; do
   -p|--prefix)
    shift
    if test $# -gt 0; then
-    pre="$1"
+    pre=$1
     shift
    fi
    ;;
@@ -43,7 +44,7 @@ while test $# -gt 0; do
   -i|--ini)
    shift
    if test $# -gt 0; then
-    k="$1"
+    k=$1
     shift
    fi
    ;;
@@ -56,37 +57,55 @@ while test $# -gt 0; do
    shift
    ;;
   *)
-   wkd="$1"
+   wkd_=$1
    shift
    ;;
  esac
 done
-
-if [ "${wkd}" ]; then
- cd "${wkd}"
+#getting arguments done
+#if change directory
+if [ "${wkd_}" ]; then
+ if [ "${v_}" ]; then
+  echo 'cd '"${wkd_}"
+ fi
+ cd "${wkd_}"
 fi
-
-rn4 -e ${ext} ${v_}
+#to FILENAME.x.EXT
+if [ "${ext}" ]; then
+ rn4 -x "${ext}" ${v_}
+else
+ rn4 ${v_}
+fi
+#PRE_KKKK
 k=${k:-0}
 pre=${pre:-$(pwd | sed 's/.*\///')}
-
+#packed as an function
 function do_something_ {
  local IFS=$'\n'
- for i in $(find . -d 1 -type f -name "[^\.\_]*.${ext}" -exec ls -1tr "{}" +;)
+ for i in $(find . -d 1 -type f -name "[^\.\_]*${ext:+".${ext}"}" -exec ls -1tr "{}" +;)
  do 
   k=$((k+1))
   kk=`printf "%4.4d" $k`
-  ext_=$(echo "$i" | sed 's/.*\.//')
-  if [ "${v_}" ]; then
-   echo 'mv' "'$i'" "'${pre}_${kk}.${ext_}'" 
+  i_=$(basename "$i")
+  ext_=$([[ "${i_}" = *.* ]] && echo ".${i_##*.}" || echo '')
+  tmp="${pre}_${kk}${ext_}"
+  if [ -f "${tmp}" ]; then
+   echo 'mv' "'$i'" "'${tmp}'" 'failed! TARGET already exists! SKIP!!!'
+  else
+   if [ "${v_}" ]; then
+    echo 'mv' "'$i'" "'${tmp}'" 
+   fi
+   mv "$i" "${tmp}"
   fi
-  mv "$i" "${pre}_${kk}.${ext_}"
  done
 }
-
+#execute function just defined
 do_something_
-
-if [ "${wkd}" ]; then
+#to where when you did nothing
+if [ "${wkd_}" ]; then
+ if [ "${v_}" ]; then
+  echo 'exit'
+ fi
  cd ${pwd_}
 fi
-#echo $k
+#finish

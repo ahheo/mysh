@@ -19,7 +19,7 @@ while test $# -gt 0; do
   -p)
    shift
    if test $# -gt 0; then
-    wkd=$1
+    wkd_=$1
     shift
    else
     echo "no path specified; exit"
@@ -32,9 +32,9 @@ while test $# -gt 0; do
    ;;
   *)
    if [ "${a0}" ]; then
-    a1="$1"
+    a1=$1
    else
-    a0="$1"
+    a0=$1
    fi
    shift
    ;;
@@ -42,18 +42,22 @@ while test $# -gt 0; do
 done
 
 if [ "${a0}" ]; then
- if [ "${wkd}" ]; then
-  cd "${wkd}"
+ if [ "${wkd_}" ]; then
+  cd "${wkd_}"
  fi
  for i in *"${a0}"*; do
   tmp_=$(echo "${a0}" | sed 's/\./\\./g')
-  tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/g')
-  if [ "${v_}" ]; then
-   echo 'mv' "'$i'" "'${tmp}'"
+  tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/')
+  if [ -f "${tmp}" ]; then
+   echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
+  else
+   if [ "${v_}" ]; then
+    echo 'mv' "'$i'" "'${tmp}'"
+   fi
+   mv "$i" "$tmp"
   fi
-  mv "$i" "$tmp"
  done
- if [ "${wkd}" ]; then
+ if [ "${wkd_}" ]; then
   cd ${pwd_}
  fi
 else

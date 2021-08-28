@@ -1,5 +1,4 @@
 #!/bin/bash
 #
-a2=$1
-a2=${a2:-$(pwd | sed 's/.*\///')}
-echo "$a2"
+tmp=$(basename "$1")
+echo $([[ "${tmp}" = *.* ]] && echo ".${tmp##*.}" || echo '')

@@ -1,9 +1,0 @@
-#!/bin/bash
-#
-# set files' createdate the same as modifydate
-for i in *"$1"*
-do
-  echo $(GetFileInfo -m "$i")
-  SetFile -d "$(GetFileInfo -m "$i")" "$i"
-done
-

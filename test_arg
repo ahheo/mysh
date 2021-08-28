@@ -1,4 +1,0 @@
-#!/bin/bash
-#
-tmp=$(basename "$1")
-echo $([[ "${tmp}" = *.* ]] && echo ".${tmp##*.}" || echo '')

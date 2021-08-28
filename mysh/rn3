@@ -38,18 +38,18 @@ while test $# -gt 0; do
    shift
    ;;
   *)
-   wkd="$1"
+   wkd_="$1"
    shift
    ;;
  esac
 done
 
-if [ "${wkd}" ]; then
- cd "${wkd}"
+if [ "${wkd_}" ]; then
+ cd "${wkd_}"
 fi
 
-for i in *.${ext}; do
- ext_=$(echo "$i" | sed 's/.*\.//')
+for i in [^._]*.${ext}; do
+ ext_=$([[ "$i" = *.* ]] && echo "${i##*.}" || echo '')
  case "${ul}" in
   U|u)
    ext__=$(echo "${ext_}" | tr "[a-z]" "[A-Z]")
@@ -58,14 +58,13 @@ for i in *.${ext}; do
    ext__=$(echo "${ext_}" | tr "[A-Z]" "[a-z]")
    ;;
  esac
- tmp=$(echo "$i" | sed 's/'"${ext_}"'/'"${ext__}"'/g')
+ tmp=$(echo "$i" | sed 's/\.'"${ext_}"'$/.'"${ext__}"'/g')
  if [ "${v_}" ]; then
   echo 'mv' "'$i'" "'${tmp}'"
  fi
  mv "$i" "${tmp}"
 done
 
-if [ "${wkd}" ]; then
+if [ "${wkd_}" ]; then
  cd ${pwd_}
 fi
-#rn2 "$pd" "x$pd"
