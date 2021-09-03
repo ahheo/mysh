@@ -27,7 +27,7 @@ while test $# -gt 0; do
    fi
    ;;
   -v)
-   v_=1
+   v_='-v'
    shift
    ;;
   *)
@@ -43,7 +43,13 @@ done
 
 if [ "${a0}" ]; then
  if [ "${wkd_}" ]; then
-  cd "${wkd_}"
+  if [ -d "${wkd_}" ]; then
+   if [ "${v_}" ]; then
+    echo 'cd '"${wkd_}"
+   fi
+   cd "${wkd_}"
+  else
+   echo "'${wkd_}' not a directory; EXIT!!!"
  fi
  for i in *"${a0}"*; do
   tmp_=$(echo "${a0}" | sed 's/\./\\./g')
@@ -58,7 +64,7 @@ if [ "${a0}" ]; then
   fi
  done
  if [ "${wkd_}" ]; then
-  cd ${pwd_}
+  cd "${pwd_}"
  fi
 else
  echo "STR0 not specified; exit"

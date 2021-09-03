@@ -34,7 +34,7 @@ while test $# -gt 0; do
    shift
    ;;
   -v)
-   v_=1
+   v_='-v'
    shift
    ;;
   *)
@@ -45,7 +45,13 @@ while test $# -gt 0; do
 done
 
 if [ "${wkd_}" ]; then
- cd "${wkd_}"
+ if [ -d "${wkd_}" ]; then
+  if [ "${v_}" ]; then
+   echo 'cd '"${wkd_}"
+  fi
+  cd "${wkd_}"
+ else
+  echo "'${wkd_}' not a directory; EXIT!!!"
 fi
 
 for i in [^._]*.${ext}; do
@@ -66,5 +72,5 @@ for i in [^._]*.${ext}; do
 done
 
 if [ "${wkd_}" ]; then
- cd ${pwd_}
+ cd "${pwd_}"
 fi

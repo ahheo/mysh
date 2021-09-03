@@ -2,6 +2,21 @@
 #
 me=$(basename "$0")
 #ext='*'
+if [ "$(which rn4)" ]; then
+ RN4=$(which rn4)
+else
+ cd "$(dirname "${BASH_SOURCE[0]}")"
+ pp=$(pwd)
+ cd ~-
+ if [ -x "${pp}/rn4" ]; then
+  RN4=${pp}/rn4
+ fi
+fi
+if [ -z "${RN4}" ]; then
+ echo 'rn4 not found; EXIT!!!'
+ exit 1
+fi
+
 pwd_=$(pwd)
 #getting arguments now
 while test $# -gt 0; do
@@ -65,16 +80,19 @@ done
 #getting arguments done
 #if change directory
 if [ "${wkd_}" ]; then
- if [ "${v_}" ]; then
-  echo 'cd '"${wkd_}"
- fi
- cd "${wkd_}"
+ if [ -d "${wkd_}" ]; then
+  if [ "${v_}" ]; then
+   echo 'cd '"${wkd_}"
+  fi
+  cd "${wkd_}"
+ else
+  echo "'${wkd_}' not a directory; EXIT!!!"
 fi
 #to FILENAME.x.EXT
 if [ "${ext}" ]; then
- rn4 -x "${ext}" ${v_}
+ "${RN4}" -x "${ext}" ${v_}
 else
- rn4 ${v_}
+ "${RN4}" ${v_}
 fi
 #PRE_KKKK
 k=${k:-0}
@@ -85,7 +103,7 @@ function do_something_ {
  for i in $(find . -d 1 -type f -name "[^\.\_]*${ext:+".${ext}"}" -exec ls -1tr "{}" +;)
  do 
   k=$((k+1))
-  kk=`printf "%4.4d" $k`
+  kk=$(printf "%4.4d" "$k")
   i_=$(basename "$i")
   ext_=$([[ "${i_}" = *.* ]] && echo ".${i_##*.}" || echo '')
   tmp="${pre}_${kk}${ext_}"
@@ -104,8 +122,8 @@ do_something_
 #to where when you did nothing
 if [ "${wkd_}" ]; then
  if [ "${v_}" ]; then
-  echo 'exit'
+  echo 'finished; exit.'
  fi
- cd ${pwd_}
+ cd "${pwd_}"
 fi
 #finish

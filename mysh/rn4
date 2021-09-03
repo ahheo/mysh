@@ -39,10 +39,13 @@ while test $# -gt 0; do
 done
 
 if [ "${wkd_}" ]; then
- if [ "${v_}" ]; then
-  echo 'cd '"${wkd_}" 
- fi
- cd "${wkd_}"
+ if [ -d "${wkd_}" ]; then
+  if [ "${v_}" ]; then
+   echo 'cd '"${wkd_}"
+  fi
+  cd "${wkd_}"
+ else
+  echo "'${wkd_}' not a directory; EXIT!!!"
 fi
 
 for i in [^._]*$([[ "${ext}" ]] && echo ".${ext}" || echo ''); do
@@ -63,7 +66,7 @@ done
 
 if [ "${wkd_}" ]; then
  if [ "${v_}" ]; then
-  echo 'exit' 
+  echo 'finished; exit.' 
  fi
- cd ${pwd_}
+ cd "${pwd_}"
 fi
