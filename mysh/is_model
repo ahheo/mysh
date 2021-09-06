@@ -10,6 +10,7 @@ while test $# -gt 0; do
   case "$1" in
     -h|--help)
       echo "${bold}$me - check photos under a directory if is produced by MODEL${normal}"
+      echo "++ ${bold}the query is based on exiftool${normal} ++"
       echo " "
       echo "${bold}usage:${normal} $me [options] MODEL [NDIR [DIRECTORY]]"
       echo " "
@@ -46,6 +47,11 @@ while test $# -gt 0; do
       ;;
     esac
 done
+
+if [ "$(which exiftool)" ]; then
+  echo "exiftool not installed; EXIT!!!"
+  exit 1
+fi
 
 if [ "${a0}" ]; then
   a1=${a1:-${a0}}

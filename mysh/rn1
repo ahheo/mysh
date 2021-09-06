@@ -25,6 +25,7 @@ while test $# -gt 0; do
   case "$1" in
     -h|--help)
       echo "${bold}$me - rename files sequentially under a directory${normal}"
+      echo "++ ${bold}rn4 may required for no-simulation mode!${normal} ++"
       echo " "
       echo "${bold}usage:${normal} $me [options] [DIRECTORY]"
       echo " "
