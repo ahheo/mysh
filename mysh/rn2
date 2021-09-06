@@ -1,72 +1,91 @@
 #!/bin/bash
 #
+bold=$(tput bold)
+normal=$(tput sgr0)
 me=$(basename "$0")
 ext='*'
 pwd_=$(pwd)
 while test $# -gt 0; do
- case "$1" in
-  -h|--help)
-   echo "$me - replace STR0 in filenames by STR1 under a directory"
-   echo " "
-   echo "$me [options] STR0 STR1"
-   echo " "
-   echo "options:"
-   echo "-h, --help                show brief help"
-   echo "-p                        specify a path; otherwise applied to current directory!"
-   echo "-v                        verbose mode"
-   exit 0
-   ;;
-  -p)
-   shift
-   if test $# -gt 0; then
-    wkd_=$1
-    shift
-   else
-    echo "no path specified; exit"
-    exit 1
-   fi
-   ;;
-  -v)
-   v_='-v'
-   shift
-   ;;
-  *)
-   if [ "${a0}" ]; then
-    a1=$1
-   else
-    a0=$1
-   fi
-   shift
-   ;;
-  esac
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - replace STR0 in filenames by STR1 under a directory${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] STR0 [STR1]"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-d                        specify a path; otherwise applied to current directory!"
+      echo "-s                        simulation mode (not executed)"
+      echo "-v                        verbose mode"
+      exit 0
+      ;;
+    -d)
+      shift
+      if test $# -gt 0; then
+        wkd_=$1
+        shift
+      else
+        echo "no path specified; exit"
+        exit 1
+      fi
+      ;;
+    -v)
+      v_='-v'
+      shift
+      ;;
+    -s)
+      s_='-s'
+      shift
+      ;;
+    *)
+      if [ "${a0}" ]; then
+        a1=$1
+      else
+        a0=$1
+      fi
+      shift
+      ;;
+    esac
 done
 
 if [ "${a0}" ]; then
- if [ "${wkd_}" ]; then
-  if [ -d "${wkd_}" ]; then
-   if [ "${v_}" ]; then
-    echo 'cd '"${wkd_}"
-   fi
-   cd "${wkd_}"
-  else
-   echo "'${wkd_}' not a directory; EXIT!!!"
- fi
- for i in *"${a0}"*; do
-  tmp_=$(echo "${a0}" | sed 's/\./\\./g')
-  tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/')
-  if [ -f "${tmp}" ]; then
-   echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
-  else
-   if [ "${v_}" ]; then
-    echo 'mv' "'$i'" "'${tmp}'"
-   fi
-   mv "$i" "$tmp"
+  if [ "${wkd_}" ]; then
+    if [ -d "${wkd_}" ]; then
+      if [ "${v_}" ]; then
+        echo 'cd '"${wkd_}"
+      fi
+      cd "${wkd_}"
+    else
+      echo "'${wkd_}' not a directory; EXIT!!!"
+      exit 1
+    fi
   fi
- done
- if [ "${wkd_}" ]; then
-  cd "${pwd_}"
- fi
+  if [ "${s_}" ]; then
+    echo "${bold}in simulation mode; NONE changes on disk!!!${normal}"
+  fi
+  for i in *"${a0}"*; do
+    if [ -f "$i" ]; then
+      tmp_=$(echo "${a0}" | sed 's/\./\\./g')
+      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/')
+      if [ -f "${tmp}" ]; then
+        echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
+      else
+        if [ "${s_}" -o "${v_}" ]; then
+          echo 'mv' "'$i'" "'${tmp}'"
+        fi
+        if [ -z "${s_}" ]; then
+          mv "$i" "$tmp"
+        fi
+      fi
+    fi
+  done
+  if [ "${wkd_}" ]; then
+    if [ "${s_}" -o "${v_}" ]; then
+      echo 'finished; exit.'
+    fi
+    cd "${pwd_}"
+  fi
 else
- echo "STR0 not specified; exit"
- exit 1
+  echo "STR0 not specified; EXIT!!!"
+  exit 1
 fi
