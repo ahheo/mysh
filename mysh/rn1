@@ -112,7 +112,7 @@ pre=${pre:-$(pwd | sed 's/.*\///')}
 #packed as an function
 function do_something_ {
   local IFS=$'\n'
-  for i in $(find . -d 1 -type f -name "[^\.\_]*${ext:+".${ext}"}" -exec ls -1tr "{}" +;)
+  for i in $(find . -maxdepth 1 -type f -name "[^\.\_]*${ext:+".${ext}"}" -exec ls -1tr "{}" +;)
   do
     if [ -f "$i" ]; then
       k=$((k+1))
