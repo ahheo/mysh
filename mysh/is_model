@@ -48,7 +48,7 @@ while test $# -gt 0; do
     esac
 done
 
-if [ "$(which exiftool)" ]; then
+if [ -z "$(which exiftool)" ]; then
   echo "exiftool not installed; EXIT!!!"
   exit 1
 fi
