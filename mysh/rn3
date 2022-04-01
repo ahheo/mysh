@@ -79,11 +79,13 @@ for i in [^._]*.${ext}; do
         ;;
     esac
     tmp=$(echo "$i" | sed 's/\.'"${ext_}"'$/.'"${ext__}"'/g')
-    if [ "${s_}" -o "${v_}" ]; then
-      echo 'mv' "'$i'" "'${tmp}'"
-    fi
-    if [ -z "${s_}" ]; then
-      mv "$i" "${tmp}"
+    if [ "$i" != "${tmp}" ]; then
+      if [ "${s_}" -o "${v_}" ]; then
+        echo 'mv' "'$i'" "'${tmp}'"
+      fi
+      if [ -z "${s_}" ]; then
+        mv "$i" "${tmp}"
+      fi
     fi
   fi
 done
