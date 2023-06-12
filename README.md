@@ -17,7 +17,7 @@ some personal shell scripts for personal use
   ```
   set files' createdate the same as modifydate (for macOS only)
   ```
-  - $is\_model -h
+- $is\_model -h
   ```
   is_model - check photos under a directory if is produced by MODEL
   ++ the query is based on exiftool ++
