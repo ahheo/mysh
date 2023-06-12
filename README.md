@@ -10,9 +10,11 @@ some personal shell scripts for personal use
 - rn4
 
 ## help info
-- d2m: 
+- d2m 
+```
 set files' createdate the same as modifydate (for macOS only)
-- \>is\_model -h
+```
+- $is\_model -h
 ```
 is_model - check photos under a directory if is produced by MODEL
 ++ the query is based on exiftool ++
@@ -26,7 +28,7 @@ options:
                           TAG; make it if not exist) under DIRECTORY (default 
                           CURRENT)
 ```
-- \>rn1 -h
+- $rn1 -h
 ```
 rn1 - rename files sequentially under a directory
 ++ rn4 may required for no-simulation mode! ++
@@ -41,7 +43,7 @@ options:
 -s                        simulation mode (not executed)
 -v                        verbose mode
 ```
-- \>rn2 -h
+- $rn2 -h
 ```
 rn2 - replace STR0 in filenames by STR1 under a directory
  
@@ -53,7 +55,7 @@ options:
 -s                        simulation mode (not executed)
 -v                        verbose mode
 ```
-- \>rn3 -h
+- $rn3 -h
 ```
 rn3 - change extension case in filename(s) under a directory
  
@@ -66,7 +68,7 @@ options:
 -s                        simulation mode (not executed)
 -v                        verbose mode
 ```
-- \>rn4 -h
+- $rn4 -h
 ```
 rn4 - add .x before extension in filename(s)
  
