@@ -80,19 +80,22 @@ for i in [^._]*.${ext}; do
     esac
     tmp=$(echo "$i" | sed 's/\.'"${ext_}"'$/.'"${ext__}"'/g')
     if [ "$i" != "${tmp}" ]; then
-      if [ "${s_}" -o "${v_}" ]; then
+      if [ "${s_}" ]; then
         echo 'mv' "'$i'" "'${tmp}'"
       fi
       if [ -z "${s_}" ]; then
+        if [ "${v_}" ]; then
+          echo 'mv' "'$i'" "'${tmp}'"
+        fi
         mv "$i" "${tmp}"
       fi
     fi
   fi
 done
 
+if [ "${s_}" -o "${v_}" ]; then
+  echo 'finished; exit.'
+fi
 if [ "${wkd_}" ]; then
-  if [ "${s_}" -o "${v_}" ]; then
-    echo 'finished; exit.'
-  fi
   cd "${pwd_}"
 fi

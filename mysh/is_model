@@ -63,19 +63,20 @@ if [ "${a0}" ]; then
     exit 1
   fi
   if [ -z "${q_}" ]; then
-    echo "mkdir -p ${a1}"
-    mkdir -p ${a1}
+    echo "mkdir -p '${a1}'"
+    mkdir -p "${a1}"
   else
     echo "${bold}in query-only mode; NONE changes on disk!!!${normal}"
   fi
   for i in *; do
     if [ -f "$i" ]; then
-      if [[ "$(exiftool -${tag} $i)" == *${a0}* ]]; then
+      tmp=$(exiftool -${tag} "$i")
+      if [[ "${tmp}" == *"${a0}"* ]]; then
         if [ "${q_}" ]; then
           echo "${i} >>>>> YES"
         else
-          echo "${i} >>>>> YES; mv ${i} ${a1}/"
-          mv ${i} ${a1}/
+          echo "${i} >>>>> YES; mv ${i} '${a1}'/"
+          mv "${i}" "${a1}"/
         fi
       else
         echo "${i} >>>>> no"
