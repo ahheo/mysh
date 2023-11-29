@@ -66,7 +66,7 @@ if [ "${a0}" ]; then
   for i in *"${a0}"*; do
     if [ -f "$i" ]; then
       tmp_=$(echo "${a0}" | sed 's`[][\\/.*^$]`\\&`g')
-      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/')
+      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/g')
       if [ -f "${tmp}" ]; then
         echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
       else
