@@ -1,0 +1,83 @@
+#!/bin/bash
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+
+pp=${HOME}/wks/wrfs/WRF4.5.x/WRF
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - update files under a direcory in the tree by copying another version ${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] WD"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-b                        basement path; otherwise use ${HOME}/wks/wrfs/WRF4.5.x/WRF!"
+      echo "-y                        yes to all"
+      exit 0
+      ;;
+    -b)
+      shift
+      if test $# -gt 0; then
+        pp=$1
+        shift
+      else
+        echo "no path specified; exit"
+        exit 1
+      fi
+      ;;
+    -y)
+      yy='yes'
+      shift
+      ;;
+    *)
+      wd=$1
+      shift
+      ;;
+    esac
+done
+
+for i in ${pp}/${wd}/*;
+do
+  if [ -f $i ]; then 
+    j=$wd/$(basename $i); 
+    if [ -f $j ]; then 
+      if [ -n "$(diff -q $i $j)" ]; then 
+        if [[ ${yy} == yes ]]; then
+          echo "cp -a $i $j"
+	  cp -a $i $j
+        else
+          echo ""
+	  echo "diff $i $j"
+          diff $i $j
+	  echo ""
+          read -p "${bold}Comfirm to replace file: $j (Y/n)?${normal}:" yn
+          echo ""	  
+	  case "${yn}" in
+            n|N|no|No|NO) echo ok, we move to next;
+              continue;;
+	    *) echo "cp -a $i $j" ;
+              cp -a $i $j ;;
+          esac
+        fi
+      fi
+    else
+      if [[ ${yy} == yes ]]; then
+        echo "cp -a $i $j"
+        cp -a $i $j
+      else
+        read -p "${bold}Comfirm to add file: $j (Y/n)?${normal}:" yn
+        echo ""	
+        case "${yn}" in
+          n|N|no|No|NO) echo ok, we move to next;
+            continue;;
+          *) echo "cp -a $i $j" ;
+            cp -a $i $j ;;
+        esac
+      fi
+    fi
+  fi
+done
