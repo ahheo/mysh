@@ -4,6 +4,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
 pwd_=$(pwd)
+g_=g
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -14,6 +15,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-p                        specify a path; otherwise applied to current directory!"
+      echo "-G                        do not globaly replace!"
       echo "-cOPERATOR                specify Shell file operator, e.g., -c-d, -c-e, (default -c-f)"
       echo "-s                        simulation mode (not executed)"
       echo "-v                        verbose mode"
@@ -33,12 +35,16 @@ while test $# -gt 0; do
       c_=$(echo $1 | sed 's/^-c//')
       shift
       ;;
+    -G)
+      g_=
+      shift
+      ;;
     -v)
-      v_='-v'
+      v_=1
       shift
       ;;
     -s)
-      s_='-s'
+      s_=1
       shift
       ;;
     *)
@@ -81,7 +87,7 @@ if [ "${a0}" ]; then
   for i in *"${a0}"*; do
     if fEx_ "$i"; then
       tmp_=$(echo "${a0}" | sed 's`[][\\/.*^$]`\\&`g')
-      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/g')
+      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/'${g_})
       if fEx_ "${tmp}"; then
         echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
       else
