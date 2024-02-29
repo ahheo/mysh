@@ -60,7 +60,7 @@ if ! echo ${vc_[@]} | fgrep -wq ${c_:1}; then
 fi
 
 fEx_() {
-  if eval "test ${c_} $1"; then true; else false; fi
+  if eval "test ${c_} '$1'"; then true; else false; fi
 }
 
 if [ "${a0}" ]; then
