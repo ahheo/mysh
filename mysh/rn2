@@ -3,7 +3,6 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
-ext='*'
 pwd_=$(pwd)
 while test $# -gt 0; do
   case "$1" in
@@ -14,12 +13,12 @@ while test $# -gt 0; do
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
-      echo "-d                        specify a path; otherwise applied to current directory!"
+      echo "-p                        specify a path; otherwise applied to current directory!"
       echo "-s                        simulation mode (not executed)"
       echo "-v                        verbose mode"
       exit 0
       ;;
-    -d)
+    -p)
       shift
       if test $# -gt 0; then
         wkd_=$1
@@ -28,6 +27,10 @@ while test $# -gt 0; do
         echo "no path specified; exit"
         exit 1
       fi
+      ;;
+    -c-*)
+      c_=$(echo $1 | sed 's/^-c//')
+      shift
       ;;
     -v)
       v_='-v'
@@ -48,6 +51,17 @@ while test $# -gt 0; do
     esac
 done
 
+c_=${c_:--f}
+vc_=({a..h} k p r s u w G L N O S)
+if ! echo ${vc_[@]} | fgrep -wq ${c_:1}; then
+  echo "arg '${c_}' invalid; EXIT!!!"
+  exit 1
+fi
+
+fEx_() {
+  if eval "test ${c_} $1"; then true; else false; fi
+}
+
 if [ "${a0}" ]; then
   if [ "${wkd_}" ]; then
     if [ -d "${wkd_}" ]; then
@@ -56,7 +70,7 @@ if [ "${a0}" ]; then
       fi
       cd "${wkd_}"
     else
-      echo "'${wkd_}' not a directory; EXIT!!!"
+      echo "directory '${wkd_}' not exist; EXIT!!!"
       exit 1
     fi
   fi
@@ -64,10 +78,10 @@ if [ "${a0}" ]; then
     echo "${bold}in simulation mode; NONE changes on disk!!!${normal}"
   fi
   for i in *"${a0}"*; do
-    if [ -f "$i" ]; then
+    if fEx_ "$i"; then
       tmp_=$(echo "${a0}" | sed 's`[][\\/.*^$]`\\&`g')
       tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/g')
-      if [ -f "${tmp}" ]; then
+      if fEx_ "${tmp}"; then
         echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
       else
         if [ "${s_}" -o "${v_}" ]; then
