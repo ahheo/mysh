@@ -14,6 +14,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-p                        specify a path; otherwise applied to current directory!"
+      echo "-cOPERATOR                specify Shell file operator, e.g., -c-d, -c-e, (default -c-f)"
       echo "-s                        simulation mode (not executed)"
       echo "-v                        verbose mode"
       exit 0
