@@ -1,0 +1,106 @@
+#!/bin/bash
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+pwd_=$(pwd)
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - rename article name in format of *_[*_[*_]]_-AYJ.pdf${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] [DIR]"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-s                        simulation mode (not executed)"
+      echo "-v                        verbose mode"
+      exit 0
+      ;;
+    -s)
+      shift
+      s_=1
+      ;;
+    -v)
+      shift
+      v_=1
+      ;;
+    *)
+      wkd_=$1
+      shift
+      ;;
+  esac
+done
+
+get_ti() {
+  pdfinfo $1 | awk '/Title:/ {
+  for (i=2;i<=11;i++) {
+    printf("%s_", $i)
+    if (i == NF)
+      break
+    }
+  }
+  END{print ""}'
+}
+
+get_ti_() {
+  cut -d "-" -f2- <<< $1 | cut -d "_" -f-10
+}
+
+get_ayj_() {
+  cut -d "-" -f1 <<< $1
+}
+
+get_ayj() {
+  sed -nE 's/(^|.*[[:punct:]])([[:alpha:]]+[[:digit:]]{4}[[:alpha:]]+)[[:punct:]]?.*$/\2/p' <<< $1
+}
+
+my_ayj() {
+f0=$1
+f0_=${f0%%[1-9]*}
+f0_=${f0_:1}
+f0__=${f0_,,}
+echo "${f0}" | sed 's/'"${f0_}"'/'"${f0__}"'/'
+}
+
+if [ "${wkd_}" ] ; then
+  cd "${wkd_}"
+fi
+
+for i in *.pdf; do
+  #if [[ $i != *_-* ]] ; then
+  if [[ $i != *_-* ]] && [[ $i != *－* ]]; then
+    fn=${i%%.pdf}
+    #echo $fn
+    ayj_=`get_ayj "$i"`
+    #if test -z "${ayj}"; then
+    #  ayj_=`get_ayj_ "${fn}"`
+    #fi
+    ayj=`my_ayj ${ayj_}`
+    #f0=`cut -d "-" -f1 <<< ${fn}`
+    #f0_=${f0%%[1-9]*}
+    #f0_=${f0_:1}
+    #f0__=${f0_,,}
+    #f0___=`echo "${f0}" | sed 's/'"${f0_}"'/'"${f0__}"'/'`
+    ti=`get_ti "$i"`
+    if test -z "${ti}"; then
+      ti=`get_ti_ "${fn}"`
+    fi
+    #f1=`cut -d "-" -f2- <<< ${fn} | cut -d "_" -f-10`
+    #f1=`[ ${f1: -1:1} = "_" ] && echo ${f1:0:-1} || echo ${f1}`
+    ti=`sed 's/[:,?]//g' <<< "${ti}"`
+    ti=`[ ${ti: -1:1} = "_" ] && echo ${ti:0:-1} || echo ${ti}`
+    #fn_=${f1}_-${f0___}.pdf
+    fn_=${ti}_-${ayj}.pdf
+    if [ "${s_}" -o "${v_}" ]; then
+      echo mv "'$i' '${fn_}'"
+    fi
+    if [ -z "${s_}" ]; then
+      mv "$i" "${fn_}"
+    fi
+  fi
+done
+
+if [ "${wkd_}" ] ; then                                                         
+  cd "${pwd_}"                                                                  
+fi
