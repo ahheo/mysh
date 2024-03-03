@@ -9,7 +9,7 @@ while test $# -gt 0; do
     -h|--help)
       echo "${bold}$me - rename article name in format of *_[*_[*_]]_-AYJ.pdf${normal}"
       echo " "
-      echo "${bold}usage:${normal} $me [options] [DIR]"
+      echo "${bold}usage:${normal} $me [options] [DIR|FILE]"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
@@ -33,10 +33,11 @@ while test $# -gt 0; do
 done
 
 get_ti() {
-  pdfinfo $1 | awk '/Title:/ {
+  pdfinfo "$1" | awk '/Title:/ {
   for (i=2;i<=11;i++) {
-    printf("%s_", $i)
-    if (i == NF)
+    if (i <= NF)
+      printf("%s_", $i)
+    else
       break
     }
   }
@@ -44,63 +45,78 @@ get_ti() {
 }
 
 get_ti_() {
-  cut -d "-" -f2- <<< $1 | cut -d "_" -f-10
+  cut -d "-" -f2- <<< "$1" | cut -d "_" -f-10
 }
 
 get_ayj_() {
-  cut -d "-" -f1 <<< $1
+  cut -d "-" -f1 <<< "$1"
 }
 
 get_ayj() {
   sed -nE 's/(^|.*[[:punct:]])([[:alpha:]]+[[:digit:]]{4}[[:alpha:]]+)[[:punct:]]?.*$/\2/p' <<< $1
 }
 
-my_ayj() {
-f0=$1
-f0_=${f0%%[1-9]*}
-f0_=${f0_:1}
-f0__=${f0_,,}
-echo "${f0}" | sed 's/'"${f0_}"'/'"${f0__}"'/'
+puri_ti() {
+  tmp=`echo $1 | sed 's/[:,?]//g' | sed 's/ /_/g'`
+  tmp=`[ "${tmp: -1:1}" = "_" ] && echo ${tmp:0:-1} || echo ${tmp}` #if title has a tail _ then remove it
+  echo $tmp
 }
 
-if [ "${wkd_}" ] ; then
-  cd "${wkd_}"
-fi
-
-for i in *.pdf; do
-  #if [[ $i != *_-* ]] ; then
-  if [[ $i != *_-* ]] && [[ $i != *－* ]]; then
-    fn=${i%%.pdf}
-    #echo $fn
-    ayj_=`get_ayj "$i"`
-    #if test -z "${ayj}"; then
-    #  ayj_=`get_ayj_ "${fn}"`
-    #fi
-    ayj=`my_ayj ${ayj_}`
-    #f0=`cut -d "-" -f1 <<< ${fn}`
-    #f0_=${f0%%[1-9]*}
-    #f0_=${f0_:1}
-    #f0__=${f0_,,}
-    #f0___=`echo "${f0}" | sed 's/'"${f0_}"'/'"${f0__}"'/'`
-    ti=`get_ti "$i"`
-    if test -z "${ti}"; then
-      ti=`get_ti_ "${fn}"`
-    fi
-    #f1=`cut -d "-" -f2- <<< ${fn} | cut -d "_" -f-10`
-    #f1=`[ ${f1: -1:1} = "_" ] && echo ${f1:0:-1} || echo ${f1}`
-    ti=`sed 's/[:,?]//g' <<< "${ti}"`
-    ti=`[ ${ti: -1:1} = "_" ] && echo ${ti:0:-1} || echo ${ti}`
-    #fn_=${f1}_-${f0___}.pdf
-    fn_=${ti}_-${ayj}.pdf
-    if [ "${s_}" -o "${v_}" ]; then
-      echo mv "'$i' '${fn_}'"
-    fi
-    if [ -z "${s_}" ]; then
-      mv "$i" "${fn_}"
-    fi
+onepdf_() {
+  i=$1
+  ayj_=`get_ayj "$i"` #AYJ from file name
+  #echo ayj_ $ayj_
+  ayj=`my_ayj "${ayj_}"` #Author name as Aa...
+  #echo ayj $ayj
+  ti=`get_ti "$i"` #get title according to pdfinfo
+  if test -z "${ti}"; then
+    ti=`get_ti_ "${fn}"` #if pdfinfo failed get title according to file name
   fi
-done
+  #echo ti0 $ti
+  if [ "${ti}" = "${ayj}" ]; then ti=`get_ayj_ "${fn}"`; fi
+  #echo ti1 $ti
+  ti=`puri_ti "${ti}"` #purify title
+  #ti=`[ ${ti: -1:1} = "_" ] && echo ${ti:0:-1} || echo ${ti}` #if title has a tail _ then remove it
+  fn_=${ti}_-${ayj}.pdf #new file name
+  if [ "${s_}" -o "${v_}" ]; then
+    echo mv "'$i' '${fn_}'"
+  fi
+  if [ -z "${s_}" ]; then
+    mv "$i" "${fn_}"
+  fi
+}
 
-if [ "${wkd_}" ] ; then                                                         
-  cd "${pwd_}"                                                                  
+my_ayj() {
+  if [ "$1" ]; then
+    f0=$1
+    f0_=${f0%%[1-9]*}
+    f0_=${f0_:1}
+    f0__=${f0_,,}
+    echo "${f0}" | sed 's/'"${f0_}"'/'"${f0__}"'/'
+  fi
+}
+
+if [ -f "${wkd_}" ] && [[ "${wkd_}" = *.pdf ]] ; then
+  i=$(basename "${wkd_}")
+  if [ "$i" = "${wkd_}" ]; then
+    onepdf_ "${wkd_}"
+  else
+    cd "${wkd_%/*}"
+    onepdf_ "$i"
+    cd -
+  fi
+  exit 0
+else
+  if [ -d "${wkd_}" ]; then
+    cd "${wkd_}"
+  fi
+  for i in *.pdf; do
+    #if [[ $i != *_-* ]] ; then
+    if [[ "$i" != *_-* ]] && [[ "$i" != *－* ]]; then
+      onepdf_ "$i"
+    fi
+  done
+  if [ -d "${wkd_}" ]; then
+    cd "${pwd}"
+  fi
 fi
