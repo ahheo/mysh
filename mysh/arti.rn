@@ -64,6 +64,7 @@ puri_ti() {
 
 onepdf_() {
   i=$1
+  fn=${i%.pdf}
   ayj_=`get_ayj "$i"` #AYJ from file name
   #echo ayj_ $ayj_
   ayj=`my_ayj "${ayj_}"` #Author name as Aa...
