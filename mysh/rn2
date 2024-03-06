@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 bold=$(tput bold)
 normal=$(tput sgr0)
@@ -95,7 +95,7 @@ if [ "${a0}" ]; then
           echo 'mv' "'$i'" "'${tmp}'"
         fi
         if [ -z "${s_}" ]; then
-          mv "$i" "$tmp"
+          mv "./$i" "$tmp"
         fi
       fi
     fi

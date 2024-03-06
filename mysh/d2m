@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # set files' createdate the same as modifydate
 for i in *"$1"*

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 bold=$(tput bold)
 normal=$(tput sgr0)
@@ -87,7 +87,7 @@ for i in [^._]*.${ext}; do
         if [ "${v_}" ]; then
           echo 'mv' "'$i'" "'${tmp}'"
         fi
-        mv "$i" "${tmp}"
+        mv "./$i" "${tmp}"
       fi
     fi
   fi
