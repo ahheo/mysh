@@ -108,7 +108,7 @@ if [ -z "${s_}" ]; then
 fi
 #PRE_KKKK
 k=${k:-0}
-pre=${pre:-$(basename ``)}
+pre=${pre:-$(basename `pwd`)}
 #packed as an function
 function do_something_ {
   local IFS=$'\n'

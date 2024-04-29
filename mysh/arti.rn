@@ -113,7 +113,7 @@ else
   fi
   for i in *.pdf; do
     #if [[ $i != *_-* ]] ; then
-    if [[ "$i" != *_-* ]] && [[ "$i" != *－* ]]; then
+    if [[ "$i" != *_-* ]] && [[ "$i" != *－* ]] && [ -f "$i" ]; then
       onepdf_ "$i"
     fi
   done
