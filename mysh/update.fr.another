@@ -9,7 +9,7 @@ pp=${HOME}/wks/wrfs/WRF4.5.x/WRF
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
-      echo "${bold}$me - update files under a direcory in the tree by copying another version ${normal}"
+      echo "${bold}$me - update files under a directory in the tree by copying another version ${normal}"
       echo " "
       echo "${bold}usage:${normal} $me [options] WD"
       echo " "

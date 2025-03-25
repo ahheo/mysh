@@ -57,7 +57,7 @@ get_ayj() {
 }
 
 puri_ti() {
-  tmp=`echo $1 | sed 's/[:,?]//g' | sed 's/ /_/g'`
+  tmp=`echo $1 | sed 's/[:,?]//g' | sed 's/\//-/g' | sed 's/ /_/g'`
   tmp=`[ "${tmp: -1:1}" = "_" ] && echo ${tmp:0:-1} || echo ${tmp}` #if title has a tail _ then remove it
   echo $tmp
 }

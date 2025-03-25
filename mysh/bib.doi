@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+key=""
+bib=""
+v_=""
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - generate doi link corresponding to specified KEY within specified BIBFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-v                        show more message"
+      exit 0
+      ;;
+    -v)
+      v_="v"
+      shift
+      ;;
+    *)
+      if test $# -gt 0; then
+	if test "$key"; then
+          bib="$1"
+        else
+	  key="$1"
+	fi
+	shift
+      fi
+      ;;
+  esac
+done
+
+if test -z "$key" ; then
+  if test "$v_" ; then
+    echo "bib key not specified! Exiting..."
+  fi
+  exit 1
+fi
+
+if test -z "$bib" ; then
+  if test $(ls -1 *bib | wc -l) -gt 0; then
+    tmp=(*bib)
+    bib=${tmp[0]}
+    if test "$v_" ; then
+      echo "bib file not specified; first bib file in the current directory used!"
+    fi
+  else
+    if test "$v_" ; then
+      echo "bib file not specified and not found in the current directory! Exiting..."
+    fi
+    exit 0
+  fi
+fi
+
+a=$(grep -i -n "@[a-z]* \?{ \?$key \?," $bib)
+if test -z "$a" ; then
+  if test "$v_" ; then
+    echo "associated record for KEY:\"$key\" not found in file \"$bib\"! Exiting..."
+  fi
+  exit 0
+fi
+
+aln=$(cut -d ":" -f1 <<< "$a")
+while read -r i; do
+  doin=$(cut -d ":" -f1 <<< "$i")
+  if test $doin -gt $aln ; then
+    b=$(grep -o "{.*}" <<< "$i" | sed 's/[{}]//g')
+    break
+  fi
+done < <(grep -i -n "doi \?=" $bib)
+
+if test -z "$b" ; then
+  if test "$v_" ; then
+    echo "doi not specified for KEY:\"$key\" in FILE:\"$bib\"! Exiting..."
+  fi
+  exit 0
+else
+  echo "http://doi.org/$b"
+fi
