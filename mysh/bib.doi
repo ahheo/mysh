@@ -80,5 +80,9 @@ if test -z "$b" ; then
   fi
   exit 0
 else
-  echo "http://doi.org/$b"
+  if [ ${b:0:4} == "http" ] ; then
+    echo "$b"
+  else
+    echo "http://doi.org/$b"
+  fi
 fi
