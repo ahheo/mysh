@@ -57,7 +57,7 @@ if test -z "$bib" ; then
   fi
 fi
 
-a=$(grep -i -n "@[a-z]* \?{ \?$key \?," $bib)
+a=$(grep -i -n "@\w*\s\?{\s\?$key\s\?," $bib)
 if test -z "$a" ; then
   if test "$v_" ; then
     echo "associated record for KEY:\"$key\" not found in file \"$bib\"! Exiting..."
@@ -66,13 +66,21 @@ if test -z "$a" ; then
 fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
+aan=$(grep -i -n "@\w*" $bib | grep -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
 while read -r i; do
   doin=$(cut -d ":" -f1 <<< "$i")
-  if test $doin -gt $aln ; then
-    b=$(grep -o "{.*}" <<< "$i" | sed 's/[{}]//g')
-    break
+  if test $aln -eq $aan; then
+    if test $doin -gt $aln ; then
+      b=$(grep -o "{.*}" <<< "$i" | sed 's/[{}]//g')
+      break
+    fi
+  else
+    if test $doin -gt $aln -a $doin -lt $aan ; then
+      b=$(grep -o "{.*}" <<< "$i" | sed 's/[{}]//g')
+      break
+    fi
   fi
-done < <(grep -i -n "doi \?=" $bib)
+done < <(grep -i -n "^[^%]\s\?doi\s\?=" $bib)
 
 if test -z "$b" ; then
   if test "$v_" ; then
