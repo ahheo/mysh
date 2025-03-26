@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+v_=""
+
+rec_=`which bb.rec`
+args_=("$@")
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - generate doi link corresponding to specified KEY within specified BIBFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-v                        show more message"
+      exit 0
+      ;;                                                                       
+    -v)                                                                         
+      v_="v"                                                                    
+      shift                                                                     
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if test "$v_" ; then
+  ${rec_} "${args_[@]}" | grep  "^bb.rec"
+fi
+b=$(${rec_} "${args_[@]}" | grep  -ioP "^[^%]\s?doi\s?=\s?{\K.*(?=})")
+
+if test -z "$b" ; then
+  if test "$v_" ; then
+    echo "$me: Nothing Found! Exiting..."
+  fi
+  exit 0
+else
+  if [ ${b:0:4} == "http" ] ; then
+    echo "$b"
+  else
+    echo "http://doi.org/$b"
+  fi
+fi

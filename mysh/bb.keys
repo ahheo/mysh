@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+v_=""
+
+#rec_=`which bb.rec`
+#args_=("$@")
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - list keys in the bib file${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-v                        show more message"
+      exit 0
+      ;;
+    -v)
+      v_="v"
+      shift
+      ;;
+    *)
+      if test $# -gt 0; then
+        bib="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+if test -z "$bib" ; then
+  if test $(ls -1 *bib | wc -l) -gt 0; then
+    tmp=(*bib)
+    bib=${tmp[0]}
+    if test "$v_" ; then
+      echo "$me: bib file not specified; the following file found in the current directory used!"
+      echo "$me: \"$bib\""
+    fi
+  else
+    if test "$v_" ; then
+      echo "$me: bib file not specified and not found in the current directory! Exiting..."
+    fi
+    exit 0
+  fi
+fi
+
+grep -oP "^\s?\@\w+{\K\w+(?=\s?,)" "$bib"

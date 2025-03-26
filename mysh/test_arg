@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+echo "$(dirname ${BASH_SOURCE[0]})"
 tmp_=$(echo $1 | sed -E 's`[][\\/.*^$]`\\&`g')
 tmp=$(echo $2 | sed -E 's/'"$tmp_"'//')
 echo "'${tmp}'"
+echo $@
+echo $*
