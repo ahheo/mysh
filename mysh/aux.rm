@@ -4,7 +4,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
 b=''
-a='log,aux,dvi,lof,lot,bit,idx,glo,bbl,bcf,ilg,toc,ind,out,blg,fdb_latexmk,fls,run.xml'
+a='log,aux,dvi,lof,lot,bit,idx,glo,bbl,bcf,ilg,toc,ind,out,blg,fdb_latexmk,fls,run.xml,synctex.gz'
 pwd_=$(pwd)
 while test $# -gt 0; do
   case "$1" in
