@@ -3,13 +3,25 @@
 some personal shell scripts for personal use
 
 ## Content
-
-- d2m
-- is\_model
-- rn1
-- rn2
-- rn3
-- rn4
+```
+├── mysh
+│   ├── arti.rn
+│   ├── aux.rm
+│   ├── bb.au.rec
+│   ├── bb.doi
+│   ├── bb.keys
+│   ├── bb.ldoi
+│   ├── bb.rec
+│   ├── d2m
+│   ├── is_model
+│   ├── rn1
+│   ├── rn2
+│   ├── rn3
+│   ├── rn4
+│   ├── test_arg
+│   └── update.fr.another
+└── README.md
+```
 
 ## help info
 
@@ -121,9 +133,9 @@ some personal shell scripts for personal use
 
 - $bb.doi -h
   ```
-  bb.doi - generate doi link corresponding to specified KEY within specified BIBFILE
+  bb.doi - generate doi link corresponding to a specified KEY within a specified BIBFILE
 
-  usage: bb.doi KEY BIBFILE
+  usage: bb.doi [options] KEY [BIBFILE]
 
   options:
   -h, --help                show brief help
@@ -132,9 +144,9 @@ some personal shell scripts for personal use
 
 - $bb.ldoi -h
   ```
-  bb.ldoi - generate doi link corresponding to specified KEY within specified BIBFILE
+  bb.ldoi - generate doi link corresponding to a specified KEY within a specified BIBFILE
 
-  usage: bb.ldoi KEY BIBFILE
+  usage: bb.ldoi [options] KEY [BIBFILE]
 
   options:
   -h, --help                show brief help
@@ -143,9 +155,9 @@ some personal shell scripts for personal use
 
 - $bb.rec -h
   ```
-  bb.rec - display bib record corresponding to specified KEY within specified BIBFILE
+  bb.rec - display bib record corresponding to a specified KEY within a specified BIBFILE
 
-  usage: bb.rec KEY BIBFILE
+  usage: bb.rec [options] KEY [BIBFILE]
 
   options:
   -h, --help                show brief help
@@ -155,9 +167,25 @@ some personal shell scripts for personal use
 - $bb.keys -h
   ```bb.keys - list keys in the bib file
 
-  usage: bb.keys KEY BIBFILE
+  usage: bb.keys [options] [BIBFILE]
 
   options:
   -h, --help                show brief help
+  -v                        show more message
+  ```
+
+- $bb.au.rec -h
+  ```
+  bb.au.rec - find corresponding records for a specified AUTHOR within a specified BIBFILE
+   
+  usage: bb.au.rec [options] -a AUTHOR [-a AUTHOR1] ... [BIBFILE]
+          if BIBFILE not specified, the first found .bib file in the current directory will be used!
+   
+  options:
+  -h, --help                show brief help
+  -a AUTHOR                 specify an AUTHOR; multiple times for multiple authors
+  -x                        fully strictly matching for the specified AUTHOR;
+                            otherwise, matching the 1st letter of the given name only
+  -c                        highlight the specified AUTHOR(s) in the result
   -v                        show more message
   ```

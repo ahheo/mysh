@@ -13,7 +13,8 @@ while test $# -gt 0; do
     -h|--help)
       echo "${bold}$me - list keys in the bib file${normal}"
       echo " "
-      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo "${bold}usage:${normal} $me [options] [BIBFILE]"
+      echo "        if BIBFILE not specified, the first found .bib file in the current directory will be used!"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
@@ -49,4 +50,4 @@ if test -z "$bib" ; then
   fi
 fi
 
-grep -oP "^\s?\@\w+{\K\w+(?=\s?,)" "$bib"
+grep --color=auto -oP "^\s?\@\w+\s?{\s?\K\w+(?=\s?,)" "$bib"

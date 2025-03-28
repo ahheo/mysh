@@ -11,18 +11,19 @@ args_=("$@")
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
-      echo "${bold}$me - generate doi link corresponding to specified KEY within specified BIBFILE${normal}"
+      echo "${bold}$me - generate doi link corresponding to a specified KEY within a specified BIBFILE${normal}"
       echo " "
-      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo "${bold}usage:${normal} $me [options] KEY [BIBFILE]"
+      echo "        if BIBFILE not specified, the first found .bib file in the current directory will be used!"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-v                        show more message"
       exit 0
-      ;;                                                                       
-    -v)                                                                         
-      v_="v"                                                                    
-      shift                                                                     
+      ;;
+    -v)
+      v_="v"
+      shift
       ;;
     *)
       shift

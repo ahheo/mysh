@@ -9,9 +9,10 @@ v_=""
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
-      echo "${bold}$me - display bib record corresponding to specified KEY within specified BIBFILE${normal}"
+      echo "${bold}$me - display bib record corresponding to a specified KEY within a specified BIBFILE${normal}"
       echo " "
-      echo "${bold}usage:${normal} $me KEY BIBFILE "
+      echo "${bold}usage:${normal} $me [options] KEY [BIBFILE]"
+      echo "        if BIBFILE not specified, the first found .bib file in the current directory will be used!"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
@@ -64,6 +65,11 @@ if test -z "$a" ; then
     echo "$me: associated record for KEY:\"$key\" not found in FILE:\"$bib\"! Exiting..."
   fi
   exit 0
+elif test $(wc -l <<< "$a") -gt 1 ; then
+  if test "$v_" ; then
+    echo "$me: multiple records for KEY:\"$key\" found in FILE:\"$bib\"! Please update contents of \"$bib\"! Exiting..."
+  fi
+  exit 0
 fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
@@ -77,5 +83,5 @@ if test $aln -eq $aan; then
   tail -n +"$aln" "$bib"
 else
   NN=$(("$aan" - "$aln"))
-  grep -i -A "$NN" "@\w*\s\?{\s\?$key\s\?," "$bib"
+  grep --color=auto -i -A "$NN" -P "@\w*\s?{\s?\K$key(?=\s?,)" "$bib"
 fi

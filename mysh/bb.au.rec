@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+v_=""
+x_=""
+c_=""
+auis_=()
+
+rec_=`which bb.rec`
+keys_=`which bb.keys`
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - find corresponding records for a specified AUTHOR within a specified BIBFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] -a AUTHOR [-a AUTHOR1] ... [BIBFILE]"
+      echo "        if BIBFILE not specified, the first found .bib file in the current directory will be used!"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-a AUTHOR                 specify an AUTHOR; multiple times for multiple authors"
+      echo "-x                        fully strictly matching for the specified AUTHOR;"
+      echo "                          otherwise, matching the 1st letter of the given name only"
+      echo "-c                        highlight the specified AUTHOR(s) in the result"
+      echo "-v                        show more message"
+      exit 0
+      ;;
+    -v)
+      v_="-v"
+      shift
+      ;;
+    -x)
+      x_="-x"
+      shift
+      ;;
+    -c)
+      c_="-c"
+      shift
+      ;;
+    -a)
+      shift
+      if test $# -gt 0; then
+        aus_+=("$1")
+        shift
+      fi
+      ;;
+    *)
+      bib="$1"
+      shift
+      ;;
+  esac
+done
+
+if test "${#aus_[@]}" -eq 0 ; then
+  if test "$v_" ; then
+    echo "$me: no author specified! Exiting..."
+  fi
+  exit 1
+fi
+
+if test -z "$bib" ; then
+  if test $(ls -1 *bib | wc -l) -gt 0; then
+    tmp=(*bib)
+    bib=${tmp[0]}
+    if test "$v_" ; then
+      echo "$me: bib file not specified; the following file found in the current directory used!"
+      echo "$me: \"$bib\""
+    fi
+  else
+    if test "$v_" ; then
+      echo "$me: bib file not specified and not found in the current directory! Exiting..."
+    fi
+    exit 0
+  fi
+fi
+
+function _au_g {
+  i1=$1
+  if test "$x_" ; then
+    echo $i1
+  else
+    o0="${i1:0:1}"
+    echo "${o0}(\.|[^\|]+)?"
+  fi
+}
+
+function _au_g_f {
+  i1=$1
+  i2=$2
+  echo "${i1} ${i2}|${i2}, ${i1}"
+}
+
+function _au {
+  i1=$1
+  if [[ "${i1}" = *", "* ]] ; then
+    gg_=$(echo "${i1}" | cut -d "," -f2)
+    gg_=${gg_:1}
+    ff_=$(echo "${i1}" | cut -d "," -f1)
+  else
+    ff_=$(echo "${i1}" | awk '{print $NF}')
+    gg_=$(echo "${i1}" | sed 's/'" $ff_"'//' )
+  fi
+  ggg_=$(_au_g "${gg_}")
+  _au_g_f "${ggg_}" "${ff_}"
+}
+
+aa_=''
+aaa_=()
+for i in "${aus_[@]}" ; do
+  gf_=$(_au "$i")
+  aaa_+=("${gf_}")
+  if test "${aa_}" ; then
+    aa_="${aa_}|${gf_}"
+  else
+    aa_="${gf_}"
+  fi
+done
+
+function _this_k {
+  key=$1
+  txt=$($rec_ "$key" "$bib" | grep -oP "author\s?=\s?{\s?\K.*(?=\s?})" | sed 's/'"\s\?and\s\?"'/\|/g')
+  o=''
+  for i in "${aaa_[@]}" ; do
+    yn=$(grep -ioP "\|\K$i(?=\|)" <<< "|$txt|")
+    if test -z "$yn"; then
+      o=''
+      break
+    else
+      if test "$o" ; then
+        o="$o|$yn"
+      else
+        o="$yn"
+      fi
+    fi
+  done
+  if test "$o"; then
+    echo "$o"
+  fi
+}
+
+function _this_k_2 {
+  key=$1
+  txt=$($rec_ "$key" "$bib" | grep -oP "author\s?=\s?{\s?\K.*(?=\s?})" | sed 's/'"\s\?and\s\?"'/\|/g')
+  for i in "${aaa_[@]}" ; do
+    yn=$(grep -ioP "\|\K$i(?=\|)" <<< "|$txt|")
+    if test -z "$yn"; then
+      return 1
+    fi
+  done
+  return 0
+}
+
+#echo "aa_: $aa_"
+keys=$($keys_ "$bib")
+if test "$c_" ; then
+  for k in ${keys} ; do
+    this_k_=$(_this_k "$k")
+    if test "$this_k_" ; then
+      txt=$($rec_ "$k" "$bib")
+      grep --color=auto -iP "(${this_k_})|$" <<< "$txt"
+    fi
+  done
+else
+  for k in ${keys} ; do
+    if _this_k_2 "$k" ; then
+      $rec_ "$k" "$bib"
+    fi
+  done
+fi
