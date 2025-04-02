@@ -29,35 +29,37 @@ while test $# -gt 0; do
 done
 
 for i in $(echo "$b" | tr "," " "); do
-  a=$(echo "$a"　| sed 's/'"$i"'//' | sed 's/,,/,/')
+  a=$(echo "$a" | sed 's/'"$i"'//g' | sed 's/,,/,/g')
 done
 
 for i in $(echo "$a" | tr "," " "); do
   if test -z "$c"; then
-    c="*.$i"
+    c="$i"
   else
-    c="$c *.$i"
+    c="$c $i"
   fi
 done
 
 d=''
 for i in $c; do
-  if test -f "$i"; then
-    if test -z "$d"; then
-      d=$i
+  if test -f *."$i" ; then
+    if test -z "$d" ; then
+      d="*.$i"
     else
-      d="$d $i"
+      d="$d *.$i"
     fi
   fi
 done
 
-read -p "rm $d? (Y|n)" yesno
-case $yesno in
-  [Nn]* )
-    echo "You answered ${yesno}, exiting"
-    exit 0
-  ;;
-  * )
-    rm -f $d
-  ;;
-esac
+if test "$d" ; then
+  read -p "rm $d? (Y|n)" yesno
+  case $yesno in
+    [Nn]* )
+      echo "You answered ${yesno}, exiting"
+      exit 0
+    ;;
+    * )
+      rm -f $d
+    ;;
+  esac
+fi
