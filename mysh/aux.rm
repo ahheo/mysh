@@ -42,7 +42,8 @@ done
 
 d=''
 for i in $c; do
-  if test -f *."$i" ; then
+  files=( *."$i" )
+  if (( ${#files[@]} )) ; then
     if test -z "$d" ; then
       d="*.$i"
     else
