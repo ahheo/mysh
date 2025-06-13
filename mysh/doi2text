@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+doi=""
+_s=""
+_l=""
+_d=""
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - generate formated citation for specified doi${normal}"
+      echo " "
+      echo "${bold}usage:${normal} [options] $me DOI"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-s STYLE                  default to harvard-cite-them-right-no-et-al"
+      echo "-l LOCALE                 default to en-US"
+      echo "--ori                     orignal doi information otherwise default to DOI:doi"
+      exit 0
+      ;;
+    -s)
+      shift
+      if test $# -gt 0; then
+        _s="$1"
+        shift
+      fi
+      ;;
+    --ori)
+      shift
+      _d="_"
+      ;;
+    -l)
+      shift
+      if test $# -gt 0; then
+        _l="$1"
+        shift
+      fi
+      ;;
+    *)
+      if test $# -gt 0; then
+        doi="$1"
+        shift
+      fi
+      ;;
+  esac
+done
+
+if test -z "$_s" ; then
+  _s="harvard-cite-them-right-no-et-al"
+fi
+
+if test -z "$_l" ; then
+  _l="en-US"
+fi
+
+if test -z "$doi" ; then
+  echo "DOI is mandaroty but not specified!"
+  exit 1
+fi
+
+doi=$(echo "$doi" | sed 's/https\?:\/\/doi.org\///')
+o=$(curl -sLH "Accept: text/x-bibliography; style=${_s}; locale=${_l}" https://doi.org/"$doi")
+
+if test -z "$_d" ; then
+  o=$(echo "$o" | sed -E 's/(available at: |Portico. )?https?:\/\/doi.org\//DOI:/I')
+fi
+
+echo "$o"
