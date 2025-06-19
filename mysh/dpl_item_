@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Initialize the array with command-line arguments
+array=("$@")
+
+if [ ${#array[@]} -eq 0 ]; then
+    echo "Error: No elements provided. Usage: $0 <elem1> <elem2> ..."
+    exit 1
+fi
+
+declare -A count     # Track occurrences of each element
+declare -A printed   # Track printed duplicates to avoid repeats
+
+# Count occurrences of each element
+for element in "${array[@]}"; do
+    ((count["$element"]++))
+done
+
+# Print duplicates in order of first occurrence
+for element in "${array[@]}"; do
+    if [[ ${count["$element"]} -gt 1 && -z "${printed["$element"]}" ]]; then
+        echo "$element"
+        printed["$element"]=1   # Mark as printed
+    fi
+done
