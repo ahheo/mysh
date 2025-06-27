@@ -50,7 +50,7 @@ if test -z "$doi" ; then
 fi
 
 if [[ "$doi" != "10."* ]] ; then
-  if test -z "$q" ; then echo "Not a valid DOI specified!" ; fi
+  if test -z "$q" ; then echo "\"${doi}\" NOT a valid DOI specified!" ; fi
   exit 1
 fi
 
@@ -86,14 +86,14 @@ function _pure_t1 {
 function _rm_items {
   _o="$1"
   for i in $(echo "$b" | tr "," " "); do
-    _o=$(echo "$_o" | sed 's/'"$i"'={[^\{\}]*},\? \?//gI')
+    _o=$(echo "$_o" | sed -E "s/$i=(\"[^\{\}\"]*\"|\{[^\{\}\"]*\}|[[:alnum:]]+),?//gI")
   done
   echo "$_o"
 }
 
 function _tolines {
   _o="$1"
-  echo "$_o" | sed 's/\s*\(\w\+\)=\({[^\{\}]*}\)/\n  \L\1\E = \2/g' | sed 's/},\? \?}/}\n}\n/'
+  echo "$_o" | sed 's/\s*\(\w\+\)=\({[^\{\}]*}\)/\n  \L\1\E = \2/g' | sed 's/},\? *}/}\n}\n/'
 }
 
 function _keys {
@@ -119,13 +119,13 @@ doi=$(echo "$doi" | sed 's/https\?:\/\/doi.org\///')
 o=$(curl -sLH "Accept: application/x-bibtex" https://doi.org/$doi)
 
 if test -z "$o" ; then
-  if test -n "$q" ; then echo "curl: returns empty! Check then validity of DOI!" ; fi
+  if test -z "$q" ; then echo "curl: returns empty! Check then validity of DOI!" ; fi
   exit 1
 fi
 
 _o=$(echo "$o" | grep -i "doi not found")
 if test -n "$_o" ; then
-  if test -n "$q" ; then echo "DOI Not Found, which may be not activated Currently!" ; fi
+  if test -z "$q" ; then echo "DOI Not Found, which may be not activated Currently!" ; fi
   exit 1
 fi
 
@@ -142,7 +142,7 @@ while IFS= read -r i ; do
     _eq_ "$i"
   fi
 done <<< "$o"
-
+echo ""
 #o=$(echo $o | sed -E 's/(\w*)_[0-9]*([0-9]{2}),/\L\1\2'"${tt}"',/' | sed 's/month=\w*,\? \?//g' | sed 's/DOI=/doi=/' | sed 's/\(pages\s\?=\s\?{\s\?[0-9]\+\s\?\)[–-]\(\s\?[0-9]\+\)/\1--\2/')
 #if test -n "$b"; then
 #  for i in $(echo "$b" | tr "," " "); do
