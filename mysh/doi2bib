@@ -16,6 +16,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-x XXX[,YYY]              remove unneeded items according to specified key(s)"
+      echo "-q                        quiet mode to suppress warning message!"
       exit 0
       ;;
     -q)
@@ -56,7 +57,7 @@ fi
 
 function _t1 {
   oo="$1"
-  oo_=$(echo "$oo" | grep -oP '(title\s*=\s*{)\K[^\{\}]*(?=\})' | cut -d ' ' -f1-3)
+  oo_=$(echo "$oo" | grep -oP '(title\s*=\s*{)\K[^\{\}]*(?=\})' | sed 's/[[:punct:]]/ /g' | sed 's/[[:digit:]]\+ //' | cut -d ' ' -f1-3)
   arr_=('A' 'AN' 'THE' 'ON' 'DO' 'CAN' 'IS' 'ARE' 'AM' 'WILL' 'THERE' 'SOME')
   o0=$(echo "$oo_" | cut -d ' ' -f1)
   o1=$(echo "$oo_" | cut -d ' ' -f2)
@@ -91,6 +92,11 @@ function _rm_items {
   echo "$_o"
 }
 
+function _joinlines {
+  _o="$1"
+  echo "$_o" | sed -E ':a ; $!N ; s/\n\s+/ / ; ta ; P ; D'
+}
+
 function _tolines {
   _o="$1"
   echo "$_o" | sed 's/\s*\(\w\+\)=\({[^\{\}]*}\)/\n  \L\1\E = \2/g' | sed 's/},\? *}/}\n}\n/'
@@ -104,7 +110,7 @@ function _keys {
 
 function _eq_ {
   _o="$1"
-  o0=$(echo "$1" | grep -E "(pages|issn)\s*=") # dash between numbers
+  o0=$(echo "$1" | grep -E "(pages|issn|number)\s*=") # dash between numbers
   if test -n "$o0" ; then
     _o=$(echo "$_o" | sed 's/\([0-9]\+\s\?\)[–-]\(\s\?[0-9]\+\)/\1--\2/')
   fi
@@ -129,11 +135,20 @@ if test -n "$_o" ; then
   exit 1
 fi
 
+_o=$(echo "$o" | grep -i "403 Forbidden")
+if test -n "$_o" ; then
+  if test -z "$q" ; then echo "bibtex record is not available even DOI could be valid!" ; fi
+  exit 1
+fi
+
+o=$(_joinlines "$o")
+
 tt=$(_t1 "${o}")
 tt=$(_pure_t1 "$tt")
 
 o=$(_rm_items "$o")
 o=$(_tolines "$o")
+o=$(echo "$o" | sed 's/&amp;/\\\&/g')
 while IFS= read -r i ; do
   o0=$(echo "$i" | grep "@\w\+")
   if test -n "$o0" ; then
