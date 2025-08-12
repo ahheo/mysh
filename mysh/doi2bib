@@ -57,7 +57,7 @@ fi
 
 function _t1 {
   oo="$1"
-  oo_=$(echo "$oo" | grep -oP '(title\s*=\s*{)\K[^\{\}]*(?=\})' | sed 's/[[:punct:]]/ /g' | sed 's/[[:digit:]]\+ //' | cut -d ' ' -f1-3)
+  oo_=$(echo "$oo" | grep -oP '( title\s*=\s*{)\K[^\{\}]*(?=\})' | sed 's/[[:punct:]]/ /g' | sed 's/[[:digit:]]\+ //' | cut -d ' ' -f1-3)
   arr_=('A' 'AN' 'THE' 'ON' 'DO' 'CAN' 'IS' 'ARE' 'AM' 'WILL' 'THERE' 'SOME')
   o0=$(echo "$oo_" | cut -d ' ' -f1)
   o1=$(echo "$oo_" | cut -d ' ' -f2)
@@ -105,7 +105,7 @@ function _tolines {
 function _keys {
   o0="$1"
   o1="$2"
-  echo "$o0" | sed "s/^\s\+//" | sed -E "s/(\w*)_[0-9]*([0-9]{2}),/\L\1\2${o1},/"
+  echo "$o0" | sed "s/^\s\+//" | sed -E "s/([a-zA-Z]*)_[0-9]*([0-9]{2}),/\L\1\2${o1},/"
 }
 
 function _eq_ {
@@ -122,10 +122,11 @@ function _eq_ {
 }
 
 doi=$(echo "$doi" | sed 's/https\?:\/\/doi.org\///')
-o=$(curl -sLH "Accept: application/x-bibtex" https://doi.org/$doi)
+_doi=$(echo "$doi" | sed 's/</%3C/g' | sed 's/>/%3E/g')
+o=$(curl -sLH "Accept: application/x-bibtex" "https://doi.org/${_doi}")
 
 if test -z "$o" ; then
-  if test -z "$q" ; then echo "curl: returns empty! Check then validity of DOI!" ; fi
+  if test -z "$q" ; then echo "curl: returns empty! Check the validity of DOI!" ; fi
   exit 1
 fi
 
