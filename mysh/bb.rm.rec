@@ -59,6 +59,7 @@ if test -z "$bib" ; then
   fi
 fi
 
+################################################################################
 a=$(grep -i -n "@\w*\s\?{\s\?$key\s\?," "$bib")
 if test -z "$a" ; then
   if test "$v_" ; then
@@ -80,12 +81,11 @@ aan=$(grep -i -n -e "^\s\?}\s\?$" -e "}\s\?}\s\?$" -e "@\w*\s\?{\s\?$key\s\?," "
        	tail -n1)
 
 if test $aln -eq $aan; then
-  tail -n +"$aln" "$bib"
+  sed -i "${aln}"',$d' "$bib"
 else
-  _tmp=$(sed -n "$(($aan+1))"'p' "$bib" | grep "\S")
-  if test -z "${_tmp}" ; then
-    aan=$(($aan+1))
-  fi
-  NN=$(("$aan" - "$aln"))
-  grep --color=auto -i -A "$NN" -P "@\w*\s?{\s?\K$key(?=\s?,)" "$bib"
+  _tmp=$(sed -n "$(($aan+1))"'p' "$bib" | grep "\S")                            
+  if test -z "${_tmp}" ; then                                                   
+    aan=$(($aan+1))                                                             
+  fi 
+  sed -i "${aln}"','"${aan}"'d' "$bib"
 fi

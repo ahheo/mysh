@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+afn=""
+bfn=""
+v_=""
+bkeys_=`which bbl.keys`
+brec_=`which bbl.rec`
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - update a.bbl with b.bbl file ${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] a.bbl b.bbl"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-v                        show more message"
+      exit 0
+      ;;
+    -v)
+      v_="v"
+      shift
+      ;;
+    *)
+      if test $# -gt 0; then
+	if test "$afn"; then
+          bfn="$1"
+        else
+	  afn="$1"
+	fi
+	shift
+      fi
+      ;;
+  esac
+done
+
+#echo "afn: $afn"
+#echo "bfn: $bfn"
+
+if [ ! -f "$afn" ] || [ ! -f "$bfn" ] ; then
+  if test "$v_" ; then
+    echo "You should specify two bbl files! Please check!"
+  fi
+  exit 1
+fi
+
+ab="a"
+key=""
+
+function _key {
+  o="$1"
+  oo=$(echo "$o" | grep -oP "^\s?\\\\\w+item\s?{\s?\K\w+(?=\s?})")
+  if test "$oo" ; then 
+    ${bkeys_} "$bfn" | grep "^${oo}$" 
+  fi
+}
+
+function _ab {
+  o="$1"
+  empty_line=$(echo "$o" | grep "\S")
+  if [ "$ab" = "a" ] ; then
+    key=$(_key "$o")
+    if [ -z "$key" ] ; then
+      echo "$o"
+    else
+      echo "$o"
+      ${brec_} "${key}" "$bfn"
+      ab="b"
+      key=""
+    fi
+  elif [ "$ab" = "b" ] && [ -z "${empty_line}" ] ; then
+    ab="a"
+  fi
+}
+
+cat "$afn" | while read -r line ; do
+  _ab "$line"
+done

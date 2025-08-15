@@ -9,10 +9,10 @@ v_=""
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
-      echo "${bold}$me - display bib record corresponding to a specified KEY within a specified BIBFILE${normal}"
+      echo "${bold}$me - display bibitem record corresponding to a specified KEY within a specified bbl file${normal}"
       echo " "
-      echo "${bold}usage:${normal} $me [options] KEY [BIBFILE]"
-      echo "        if BIBFILE not specified, the first found .bib file in the current directory will be used!"
+      echo "${bold}usage:${normal} $me [options] KEY [BBLFILE]"
+      echo "        if BBLFILE not specified, the first found .bbl file in the current directory will be used!"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
@@ -44,22 +44,22 @@ if test -z "$key" ; then
 fi
 
 if test -z "$bib" ; then
-  if test $(ls -1 *bib | wc -l) -gt 0; then
-    tmp=(*bib)
+  if test $(ls -1 *bbl | wc -l) -gt 0; then
+    tmp=(*bbl)
     bib=${tmp[0]}
     if test "$v_" ; then
-      echo "$me: bib file not specified; the following file found in the current directory used!"
+      echo "$me: bbl file not specified; the following file found in the current directory used!"
       echo "$me: \"$bib\""
     fi
   else
     if test "$v_" ; then
-      echo "$me: bib file not specified and not found in the current directory! Exiting..."
+      echo "$me: bbl file not specified and not found in the current directory! Exiting..."
     fi
     exit 0
   fi
 fi
 
-a=$(grep -i -n "@\w*\s\?{\s\?$key\s\?," "$bib")
+a=$(grep -i -n -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' "$bib")
 if test -z "$a" ; then
   if test "$v_" ; then
     echo "$me: associated record for KEY:\"$key\" not found in FILE:\"$bib\"! Exiting..."
@@ -74,18 +74,14 @@ fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
 #aan=$(grep -i -n "@\w*" $bib | grep -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
-aan=$(grep -i -n -e "^\s\?}\s\?$" -e "}\s\?}\s\?$" -e "@\w*\s\?{\s\?$key\s\?," "$bib" |
-       	grep -i -A 1 "@\w*\s\?{\s\?$key\s\?," |
+aan=$(grep -i -n -e '^\s*$' -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' "$bib" |
+       	grep -i -A 1 -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' |
        	cut -d ":" -f1 |
        	tail -n1)
 
 if test $aln -eq $aan; then
   tail -n +"$aln" "$bib"
 else
-  _tmp=$(sed -n "$(($aan+1))"'p' "$bib" | grep "\S")
-  if test -z "${_tmp}" ; then
-    aan=$(($aan+1))
-  fi
   NN=$(("$aan" - "$aln"))
-  grep --color=auto -i -A "$NN" -P "@\w*\s?{\s?\K$key(?=\s?,)" "$bib"
+  grep --color=auto -i -A "$NN" -P '\\\w*item\s?{\s?\K'"$key"'(?=\s?})' "$bib" | tail -n +2
 fi

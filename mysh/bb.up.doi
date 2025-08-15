@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+doi=""
+bib=""
+b=""
+q=""
+d2b_=`which doi2bib`
+brm_=`which bb.rm.rec`
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - generate bibtex record for specified doi${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me DOI"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-x XXX[,YYY]              remove unneeded items according to specified key(s)"
+      echo "-q                        quiet mode to suppress warning message!"
+      exit 0
+      ;;
+    -q)
+      shift
+      q="q"
+      ;;
+    -x)
+      shift
+      if test $# -gt 0; then
+        b="$1"
+        shift
+      fi
+      ;;
+    *)
+      if test $# -gt 0; then
+        if test -n "$doi" ; then
+          bib="$1"
+	  shift
+        else
+          doi="$1"
+          shift
+	fi
+      fi
+      ;;
+  esac
+done
+
+if test -z "$b" ; then
+  b="month"
+else
+  b="${b},month"
+fi
+
+if test -z "$doi" ; then
+  if test -z "$q" ; then echo "$me: DOI is mandaroty but not specified!" ; fi
+  exit 1
+fi
+
+if [[ "$doi" != "10."* ]] ; then
+  if test -z "$q" ; then echo "$me: \"${doi}\" NOT a valid DOI specified!" ; fi
+  exit 1
+fi
+
+if test -z "$bib" ; then                                                        
+  if test $(ls -1 *bib | wc -l) -gt 0; then                                     
+    tmp=(*bib)                                                                  
+    bib=${tmp[0]}                                                               
+    if test -z "$q" ; then                                                        
+      echo "$me: bib file not specified; the following file found in the current directory used!"
+      echo "$me: \"$bib\""                                                      
+    fi                                                                          
+  else                                                                          
+    if test -z "$q" ; then                                                        
+      echo "$me: bib file not specified and not found in the current directory! Exiting..."
+    fi                                                                          
+    exit 0                                                                      
+  fi                                                                            
+fi
+
+o=$(${d2b_} -x url,issn "$doi")
+key=$(echo "$o" | grep -oP "^\s?\@\w+\s?{\s?\K\w+(?=\s?,)")
+${brm_} "$key" "$bib"
+if test -z "$q" ; then
+  echo "$o" | tee -a "$bib"
+else
+  echo "$o" >> "$bib"
+fi
+echo "" >> "$bib"

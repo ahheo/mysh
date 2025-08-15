@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+doi=""
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - generate formated citation for specified doi${normal}"
+      echo " "
+      echo "${bold}usage:${normal} [options] $me DOI"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      exit 0
+      ;;
+    *)
+      if test $# -gt 0; then
+        doi="$1"
+        shift
+      fi
+      ;;
+  esac
+done
+
+if test -z "$doi" ; then
+  echo "DOI is mandaroty but not specified!"
+  exit 1
+fi
+
+doi=$(echo "$doi" | sed 's/https\?:\/\/doi.org\///')
+`which open` https://doi.org/"$doi"
