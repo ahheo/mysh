@@ -59,7 +59,7 @@ if test -z "$bib" ; then
   fi
 fi
 
-a=$(grep -i -n -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' "$bib")
+a=$(grep -i -n -e '\\\w*item\(\[\w*\]\)\?\s\?{\s\?'"$key"'\s\?}' "$bib")
 if test -z "$a" ; then
   if test "$v_" ; then
     echo "$me: associated record for KEY:\"$key\" not found in FILE:\"$bib\"! Exiting..."
@@ -74,8 +74,8 @@ fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
 #aan=$(grep -i -n "@\w*" $bib | grep -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
-aan=$(grep -i -n -e '^\s*$' -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' "$bib" |
-       	grep -i -A 1 -e '\\\w*item\s\?{\s\?'"$key"'\s\?}' |
+aan=$(grep -i -n -e '^\s*$' -e '\\\w*item\(\[\w*\]\)\?\s\?{\s\?'"$key"'\s\?}' "$bib" |
+	grep -i -A 1 -e '\\\w*item\(\[\w*\]\)\?\s\?{\s\?'"$key"'\s\?}' |
        	cut -d ":" -f1 |
        	tail -n1)
 
@@ -83,5 +83,5 @@ if test $aln -eq $aan; then
   tail -n +"$aln" "$bib"
 else
   NN=$(("$aan" - "$aln"))
-  grep --color=auto -i -A "$NN" -P '\\\w*item\s?{\s?\K'"$key"'(?=\s?})' "$bib" | tail -n +2
+  grep --color=auto -i -A "$NN" -P '\\\w*item(\[\w*\])?\s?{\s?\K'"$key"'(?=\s?})' "$bib" | tail -n +2
 fi
