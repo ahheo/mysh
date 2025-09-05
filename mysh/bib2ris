@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+#
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+bib=""
+v_=""
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - convert BIBFILE to RISFILR${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me BIBFILE"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      exit 0
+      ;;
+    -v)                                                                         
+      v_="v"                                                                    
+      shift                                                                     
+      ;; 
+    *)
+      if test $# -gt 0; then
+        bib="$1"
+	shift
+      fi
+      ;;
+  esac
+done
+
+if test -z "$bib" ; then
+  if test "$v_" ; then
+    echo "$me: BIBFILE not specified; EXITING!"
+  fi
+  exit 1
+else
+  if [[ ! "$bib" = *.bib ]] ; then
+    if test "$v_" ; then
+      echo "$me: a BIBFILE should be '*.bib'! EXITING!"
+    fi
+    exit 1
+  fi
+fi
+
+fxml=$(echo "$bib" | sed 's/.bib$/.xml/')
+fris=$(echo "$bib" | sed 's/.bib$/.ris/')
+
+_b2x=`which bib2xml`
+_x2r=`which xml2ris`
+
+if [ -z "$_b2x" ] || [ -z "$_x2r" ]; then
+  if test "$v_" ; then
+      echo "$me: bib2xml and xml2ris not found! Please install the package 'bibutils'! EXITING"
+  fi
+  exit 1
+fi
+
+${_b2x} "$bib" > "$fxml"
+${_x2r} "$fxml" > "$fris"
+`which rm` "$fxml"
