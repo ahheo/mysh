@@ -53,7 +53,7 @@ key=""
 
 function _key {
   o="$1"
-  oo=$(echo "$o" | grep -oP "^\s?\\\\\w+item(\[\w*\])?\s?{\s?\K\w+(?=\s?})")
+  oo=$(echo "$o" | grep -oP "^\s?\\\\\w+item(\[\w*\])?\s*{\s*\K\w+(?=\s*})")
   if test "$oo" ; then 
     ${bkeys_} "$bfn" | grep "^${oo}$" 
   fi

@@ -80,7 +80,7 @@ if test -z "$bib" ; then
 fi
 
 o=$(${d2b_} -x url,issn "$doi")
-key=$(echo "$o" | grep -oP "^\s?\@\w+\s?{\s?\K\w+(?=\s?,)")
+key=$(echo "$o" | grep -oP "^\s?\@\w+\s*{\s*\K\w+(?=\s*,)")
 ${brm_} "$key" "$bib"
 if test -z "$q" ; then
   echo "$o" | tee -a "$bib"

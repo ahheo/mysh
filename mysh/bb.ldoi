@@ -34,7 +34,7 @@ done
 if test "$v_" ; then
   ${rec_} "${args_[@]}" | grep  "^bb.rec"
 fi
-b=$(${rec_} "${args_[@]}" | grep  -ioP "^[^%]\s?doi\s?=\s?{\K.*(?=})")
+b=$(${rec_} "${args_[@]}" | grep  -ioP "^[^%]\s*doi\s*=\s*{\K.*(?=\s*})")
 
 if test -z "$b" ; then
   if test "$v_" ; then
@@ -45,6 +45,6 @@ else
   if [ ${b:0:4} == "http" ] ; then
     echo "$b"
   else
-    echo "http://doi.org/$b"
+    echo "https://doi.org/$b"
   fi
 fi

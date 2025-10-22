@@ -50,4 +50,4 @@ if test -z "$bib" ; then
   fi
 fi
 
-grep --color=auto -oP "^\s?\@\w+\s?{\s?\K\w+(?=\s?,)" "$bib"
+grep --color=auto -oP "^\s*\@\w+\s*{\s*\K\w+(?=\s*,)" "$bib"
