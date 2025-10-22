@@ -8,9 +8,9 @@ bfn=""
 v_=""
 
 if [[ "$(uname -s)" == *Darwin* ]] ; then
-  grep_=`which grep`
-else
   grep_=`which ggrep`
+else
+  grep_=`which grep`
 fi
 if test -z "$grep_" ; then
   echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
