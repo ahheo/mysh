@@ -6,6 +6,18 @@ me=$(basename "$0")
 afn=""
 bfn=""
 v_=""
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
+
 bkeys_=`which bbl.keys`
 brec_=`which bbl.rec`
 
@@ -53,15 +65,15 @@ key=""
 
 function _key {
   o="$1"
-  oo=$(echo "$o" | grep -oP "^\s?\\\\\w+item(\[\w*\])?\s*{\s*\K\w+(?=\s*})")
-  if test "$oo" ; then 
-    ${bkeys_} "$bfn" | grep "^${oo}$" 
+  oo=$(echo "$o" | ${grep_} -oP "^\s?\\\\\w+item(\[\w*\])?\s*{\s*\K\w+(?=\s*})")
+  if test "$oo" ; then
+    ${bkeys_} "$bfn" | ${grep_} "^${oo}$"
   fi
 }
 
 function _ab {
   o="$1"
-  empty_line=$(echo "$o" | grep "\S")
+  empty_line=$(echo "$o" | ${grep_} "\S")
   if [ -n "${key}" ] && [ -z "${empty_line}" ] ; then
     echo "b"
   else
@@ -76,7 +88,7 @@ cat "$afn" | while read -r line ; do
     if [ "${ab}" = "a" ] ; then
       echo "$line"
     else
-      echo '\newblock'  
+      echo '\newblock'
       ${brec_} "${key}" "$bfn"
       ab="a"
       key=""

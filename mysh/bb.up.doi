@@ -9,6 +9,16 @@ b=""
 q=""
 d2b_=`which doi2bib`
 brm_=`which bb.rm.rec`
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -63,24 +73,24 @@ if [[ "$doi" != "10."* ]] ; then
   exit 1
 fi
 
-if test -z "$bib" ; then                                                        
-  if test $(ls -1 *bib | wc -l) -gt 0; then                                     
-    tmp=(*bib)                                                                  
-    bib=${tmp[0]}                                                               
-    if test -z "$q" ; then                                                        
+if test -z "$bib" ; then
+  if test $(ls -1 *bib | wc -l) -gt 0; then
+    tmp=(*bib)
+    bib=${tmp[0]}
+    if test -z "$q" ; then
       echo "$me: bib file not specified; the following file found in the current directory used!"
-      echo "$me: \"$bib\""                                                      
-    fi                                                                          
-  else                                                                          
-    if test -z "$q" ; then                                                        
+      echo "$me: \"$bib\""
+    fi
+  else
+    if test -z "$q" ; then
       echo "$me: bib file not specified and not found in the current directory! Exiting..."
-    fi                                                                          
-    exit 0                                                                      
-  fi                                                                            
+    fi
+    exit 0
+  fi
 fi
 
 o=$(${d2b_} -x url,issn "$doi")
-key=$(echo "$o" | grep -oP "^\s?\@\w+\s*{\s*\K\w+(?=\s*,)")
+key=$(echo "$o" | ${grep_} -oP "^\s?\@\w+\s*{\s*\K\w+(?=\s*,)")
 ${brm_} "$key" "$bib"
 if test -z "$q" ; then
   echo "$o" | tee -a "$bib"

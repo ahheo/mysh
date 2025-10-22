@@ -8,6 +8,16 @@ bfn=""
 v_=""
 bkeys_=`which bbl.keys`
 brec_=`which bbl.rec`
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 
 while test $# -gt 0; do
   case "$1" in
@@ -53,15 +63,15 @@ key=""
 
 function _key {
   o="$1"
-  oo=$(echo "$o" | grep -oP "^\s?\\\\\w+item(\[\w*\])?\s*{\s*\K\w+(?=\s*})")
-  if test "$oo" ; then 
-    ${bkeys_} "$bfn" | grep "^${oo}$" 
+  oo=$(echo "$o" | ${grep_} -oP "^\s?\\\\\w+item(\[\w*\])?\s*{\s*\K\w+(?=\s*})")
+  if test "$oo" ; then
+    ${bkeys_} "$bfn" | ${grep_} "^${oo}$"
   fi
 }
 
 function _ab {
   o="$1"
-  empty_line=$(echo "$o" | grep "\S")
+  empty_line=$(echo "$o" | ${grep_} "\S")
   if [ "$ab" = "a" ] ; then
     key=$(_key "$o")
     if [ -z "$key" ] ; then

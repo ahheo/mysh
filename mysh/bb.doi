@@ -6,6 +6,18 @@ me=$(basename "$0")
 key=""
 bib=""
 v_=""
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
+
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -59,7 +71,7 @@ if test -z "$bib" ; then
   fi
 fi
 
-a=$(grep -i -n "@\w*\s*{\s*$key\s*," "$bib")
+a=$(${grep_} -i -n "@\w*\s*{\s*$key\s*," "$bib")
 if test -z "$a" ; then
   if test "$v_" ; then
     echo "$me: associated record for KEY:\"$key\" not found in FILE:\"$bib\"! Exiting..."
@@ -68,21 +80,21 @@ if test -z "$a" ; then
 fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
-aan=$(grep -i -n "@\w*" "$bib" | grep -i -A 1 "@\w*\s*{\s*$key\s*," | cut -d ":" -f1 | tail -n1)
+aan=$(${grep_} -i -n "@\w*" "$bib" | ${grep_} -i -A 1 "@\w*\s*{\s*$key\s*," | cut -d ":" -f1 | tail -n1)
 while read -r i; do
   doin=$(cut -d ":" -f1 <<< "$i")
   if test $aln -eq $aan; then
     if test $doin -gt $aln ; then
-      b=$(grep -oP "{\K.*(?=})" <<< "$i")
+      b=$(${grep_} -oP "{\K.*(?=})" <<< "$i")
       break
     fi
   else
     if test $doin -gt $aln -a $doin -lt $aan ; then
-      b=$(grep -oP "{\K.*(?=})" <<< "$i")
+      b=$(${grep_} -oP "{\K.*(?=})" <<< "$i")
       break
     fi
   fi
-done < <(grep -i -n "^[^%]\s*doi\s*=" "$bib")
+done < <(${grep_} -i -n "^[^%]\s*doi\s*=" "$bib")
 
 if test -z "$b" ; then
   if test "$v_" ; then

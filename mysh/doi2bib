@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -57,13 +67,13 @@ fi
 
 function _t1 {
   oo="$1"
-  oo_=$(echo "$oo" | grep -oP '( title\s*=\s*{)\K[^\{\}]*(?=\})' | sed 's/[[:punct:]]/ /g' | sed 's/[[:digit:]]\+ //' | cut -d ' ' -f1-3)
+  oo_=$(echo "$oo" | ${grep_} -oP '( title\s*=\s*{)\K[^\{\}]*(?=\})' | sed 's/[[:punct:]]/ /g' | sed 's/[[:digit:]]\+ //' | cut -d ' ' -f1-3)
   arr_=('A' 'AN' 'THE' 'ON' 'DO' 'CAN' 'IS' 'ARE' 'AM' 'WILL' 'THERE' 'SOME')
   o0=$(echo "$oo_" | cut -d ' ' -f1)
   o1=$(echo "$oo_" | cut -d ' ' -f2)
   o2=$(echo "$oo_" | cut -d ' ' -f3)
-  if [[ $(echo "${arr_[@]}" | grep -w "${o0^^}") ]] ; then
-    if [[ $(echo "${arr_[@]}" | grep -w "${o1^^}") ]] ; then
+  if [[ $(echo "${arr_[@]}" | ${grep_} -w "${o0^^}") ]] ; then
+    if [[ $(echo "${arr_[@]}" | ${grep_} -w "${o1^^}") ]] ; then
       echo "${o2,,}"
     else
       echo "${o1,,}"
@@ -76,9 +86,9 @@ function _t1 {
 function _pure_t1 {
   oo="$1"
   oo=$(echo "${oo}" | sed 's/[{}`:]//g')
-  dd=$(echo "${oo}" | grep -o '[\-‐]*')
+  dd=$(echo "${oo}" | ${grep_} -o '[\-‐]*')
   if test -n "$dd" ; then
-    echo  "${oo}" | grep -oP ".*(?=${dd})"
+    echo  "${oo}" | ${grep_} -oP ".*(?=${dd})"
   else
     echo "${oo}"
   fi
@@ -110,11 +120,11 @@ function _keys {
 
 function _eq_ {
   _o="$1"
-  o0=$(echo "$1" | grep -E "(pages|issn|number)\s*=") # dash between numbers
+  o0=$(echo "$1" | ${grep_} -E "(pages|issn|number)\s*=") # dash between numbers
   if test -n "$o0" ; then
     _o=$(echo "$_o" | sed 's/\([0-9]\+\s\?\)[–-]\(\s\?[0-9]\+\)/\1--\2/')
   fi
-  o0=$(echo "$1" | grep -E "(author|editor)\s*=") # NAME --> Name
+  o0=$(echo "$1" | ${grep_} -E "(author|editor)\s*=") # NAME --> Name
   if test -n "$o0" ; then
     _o=$(echo "$_o" | sed 's/\([[:upper:]]\{2,\}\)/\L\u\1/g')
   fi
@@ -130,13 +140,13 @@ if test -z "$o" ; then
   exit 1
 fi
 
-_o=$(echo "$o" | grep -i "doi not found")
+_o=$(echo "$o" | ${grep_} -i "doi not found")
 if test -n "$_o" ; then
   if test -z "$q" ; then echo "DOI Not Found, which may be not activated Currently!" ; fi
   exit 1
 fi
 
-_o=$(echo "$o" | grep -i "403 Forbidden")
+_o=$(echo "$o" | ${grep_} -i "403 Forbidden")
 if test -n "$_o" ; then
   if test -z "$q" ; then echo "bibtex record is not available even DOI could be valid!" ; fi
   exit 1
@@ -151,7 +161,7 @@ o=$(_rm_items "$o")
 o=$(_tolines "$o")
 o=$(echo "$o" | sed 's/&amp;/\\\&/g')
 while IFS= read -r i ; do
-  o0=$(echo "$i" | grep "@\w\+")
+  o0=$(echo "$i" | ${grep_} "@\w\+")
   if test -n "$o0" ; then
     _keys "$i" "$tt"
   else

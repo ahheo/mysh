@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -59,7 +69,7 @@ if test -z "$bib" ; then
   fi
 fi
 
-a=$(grep -i -n "@\w*\s*{\s*$key\s*," "$bib")
+a=$(${grep_} -i -n "@\w*\s*{\s*$key\s*," "$bib")
 if test -z "$a" ; then
   if test "$v_" ; then
     echo "$me: associated record for KEY:\"$key\" not found in FILE:\"$bib\"! Exiting..."
@@ -73,19 +83,19 @@ elif test $(wc -l <<< "$a") -gt 1 ; then
 fi
 
 aln=$(cut -d ":" -f1 <<< "$a")
-#aan=$(grep -i -n "@\w*" $bib | grep -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
-aan=$(grep -i -n -e "^\s*}\s*$" -e "}\s*}\s*$" -e "@\w*\s*{\s*$key\s*," "$bib" |
-       	grep -i -A 1 "@\w*\s*{\s*$key\s*," |
+#aan=$(${grep_} -i -n "@\w*" $bib | ${grep_} -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
+aan=$(${grep_} -i -n -e "^\s*}\s*$" -e "}\s*}\s*$" -e "@\w*\s*{\s*$key\s*," "$bib" |
+       	${grep_} -i -A 1 "@\w*\s*{\s*$key\s*," |
        	cut -d ":" -f1 |
        	tail -n1)
 
 if test $aln -eq $aan; then
   tail -n +"$aln" "$bib"
 else
-  _tmp=$(sed -n "$(($aan+1))"'p' "$bib" | grep "\S")
+  _tmp=$(sed -n "$(($aan+1))"'p' "$bib" | ${grep_} "\S")
   if test -z "${_tmp}" ; then
     aan=$(($aan+1))
   fi
   NN=$(("$aan" - "$aln"))
-  grep --color=auto -i -A "$NN" -P "@\w*\s*{\s*\K$key(?=\s*,)" "$bib"
+  ${grep_} --color=auto -i -A "$NN" -P "@\w*\s*{\s*\K$key(?=\s*,)" "$bib"
 fi

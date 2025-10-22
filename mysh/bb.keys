@@ -7,6 +7,16 @@ v_=""
 
 #rec_=`which bb.rec`
 #args_=("$@")
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which grep`
+else
+  grep_=`which ggrep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 
 while test $# -gt 0; do
   case "$1" in
@@ -50,4 +60,4 @@ if test -z "$bib" ; then
   fi
 fi
 
-grep --color=auto -oP "^\s*\@\w+\s*{\s*\K\w+(?=\s*,)" "$bib"
+${grep_} --color=auto -oP "^\s*\@\w+\s*{\s*\K\w+(?=\s*,)" "$bib"
