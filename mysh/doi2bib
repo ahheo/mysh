@@ -60,6 +60,8 @@ if test -z "$doi" ; then
   exit 1
 fi
 
+doi=$(sed "s/^https\?:\/\/doi\.org\///" <<< "$doi")
+
 if [[ "$doi" != "10."* ]] ; then
   if test -z "$q" ; then echo "\"${doi}\" NOT a valid DOI specified!" ; fi
   exit 1
