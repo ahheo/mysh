@@ -80,7 +80,7 @@ onepdf_() {
   #ti=`[ ${ti: -1:1} = "_" ] && echo ${ti:0:-1} || echo ${ti}` #if title has a tail _ then remove it
   fn_=${ti}_-${ayj}.pdf #new file name
   if [ "${s_}" -o "${v_}" ]; then
-    echo mv "'$i' '${fn_}'"
+    echo "mv '$i' '${fn_}'"
   fi
   if [ -z "${s_}" ]; then
     mv "./$i" "${fn_}"
@@ -102,13 +102,22 @@ if [ -f "${wkd_}" ] && [[ "${wkd_}" = *.pdf ]] ; then
   if [ "$i" = "${wkd_}" ]; then
     onepdf_ "${wkd_}"
   else
+    if [ "${s_}" -o "${v_}" ]; then
+      echo "cd ${wkd_%/*}"
+    fi
     cd "${wkd_%/*}"
     onepdf_ "$i"
+    if [ "${s_}" -o "${v_}" ]; then
+      echo "cd -"
+    fi
     cd -
   fi
   exit 0
 else
   if [ -d "${wkd_}" ]; then
+    if [ "${s_}" -o "${v_}" ]; then
+      echo "cd ${wkd_%/*}"
+    fi
     cd "${wkd_}"
   fi
   for i in *.pdf; do
@@ -118,6 +127,9 @@ else
     fi
   done
   if [ -d "${wkd_}" ]; then
-    cd "${pwd}"
+    if [ "${s_}" -o "${v_}" ]; then
+      echo "cd -"
+    fi
+    cd -
   fi
 fi
