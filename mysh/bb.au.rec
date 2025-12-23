@@ -100,7 +100,8 @@ function _au_g {
 function _au_g_f {
   i1=$1
   i2=$2
-  echo "${i1} ${i2}|${i2}, ${i1}"
+  #echo "${i1} ${i2}|${i2}, ${i1}"
+  echo "${i1} ${i2}\*?|${i2}\*?, ${i1}"
 }
 
 function _au {
