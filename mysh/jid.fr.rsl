@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which ggrep`
+else
+  grep_=`which grep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+rsl="rsl.error.0000"
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - get \"current time\" of a running WRF simulation from a RSLFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [RSLFILE]"
+      echo "        if RSLFILE not specified, rsl.error.0000 in the current directory will be used!"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      exit 0
+      ;;
+    *)
+      if test $# -gt 0; then
+        rsl="$1"
+        shift
+      fi
+      ;;
+  esac
+done
+
+if ! test -f "$rsl" ; then echo "File '${rsl}' does not exist!!! Exit!" ; exit 0 ; fi
+
+node0=$(head -1 "$rsl" | grep -oP "hostname: \K\w*")
+squeue --node="$node0" -u $USER -o "%i" --noheader

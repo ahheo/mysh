@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+#
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which ggrep`
+else
+  grep_=`which grep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+nml="namelist.input"
+_l=""
+_g=""
+_p=""
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - get information from a NMLFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] [NMLFILE]"
+      echo "        if NMLFILE not specified, namelist.input in the current directory will be used!"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-g GROUP                  specify group name"
+      echo "-p PARAM                  specify paramenter name"
+      echo "-l                        '\$$me -l' will list group names in NMLFILE;"
+      echo "                          '\$$me -l -g GROUP' will show the block of GROUP;"
+      echo "                          without '-l', ' -g GROUP -p PARAM' is then mandotory and will "
+      echo "                          show the value of PARAM under GROUP!"
+      echo " "
+      exit 0
+      ;;
+    -l)
+      _l=1
+      shift
+      ;;
+    -g)
+      shift
+      if test $# -gt 0; then
+        _g="$1"
+	shift
+      else
+        echo "no group name specified; exit!"
+	exit 1
+      fi
+      ;;
+    -p)
+      shift
+      if test $# -gt 0; then
+        _p="$1"
+	shift
+      else
+        echo "no parameter name specified; exit!"
+	exit 1
+      fi
+      ;;
+    *)
+      if test $# -gt 0; then
+        nml="$1"
+        shift
+      fi
+      ;;
+  esac
+done
+
+if ! test -f "$nml" ; then echo "File '${nml}' does not exist!!! Exit!" ; exit 0 ; fi
+
+getblock_() {
+  local gg="$1"
+  sed -n "/^[[:space:]]*&\<${gg}\>/,/^[[:space:]]*\(&end\|\/\)/p" "$nml"
+}
+
+getparam_() {
+  local bb="$1"
+  local pp="$2"
+  #echo "$bb" | sed "s/\!.*//" | grep "\<$pp\>" | tail -1 | sed "s/&\<\w*\>//g; s/.*${pp}[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,[[:space:]]*$//"
+  echo "$bb" | sed "s/\!.*//" | grep "\<$pp\>" | sed "s/&\<\w*\>//g; s/.*${pp}[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,[[:space:]]*$//"
+}
+
+if test "$_g" && test "$_p" ; then
+  a_=$(getblock_ "$_g")
+  if test -z "$a_" ; then
+    echo "block for \"${_g}\" not found! Exit!"
+    exit 1
+  fi
+  getparam_ "$a_" "$_p"
+  exit 0
+fi
+
+if test "$_l" ; then
+  if test "$_g"; then
+    a_=$(getblock_ "$_g")
+    if test -z "$a_" ; then
+      echo "block for \"${_g}\" not found! Exit!"
+      exit 1
+    else
+      echo "$a_"
+    fi
+  else
+    ${grep_} -oP "^[[:space:]]*&\K\w+" "$nml"
+  fi
+else
+  echo 'without "-l", "-g GROUP -p PARAM" is then mandotory!!! Exit!'
+  exit 1
+fi
