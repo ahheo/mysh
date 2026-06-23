@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 #
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which ggrep`
+  sed_=`which gsed`
+else
+  grep_=`which grep`
+  sed_=`which sed`
+fi
+if test -z "$grep_" -o -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -24,7 +38,7 @@ while test $# -gt 0; do
     -p)
       shift
       if test $# -gt 0; then
-        wkd_=$1
+        wkd_="$1"
         shift
       else
         echo "no path specified; exit"
@@ -32,7 +46,7 @@ while test $# -gt 0; do
       fi
       ;;
     -c-*)
-      c_=$(echo $1 | sed 's/^-c//')
+      c_=$(echo "$1" | ${sed_} 's/^-c//')
       shift
       ;;
     -G)
@@ -49,9 +63,9 @@ while test $# -gt 0; do
       ;;
     *)
       if [ "${a0}" ]; then
-        a1=$1
+        a1="$1"
       else
-        a0=$1
+        a0="$1"
       fi
       shift
       ;;
@@ -86,8 +100,8 @@ if [ "${a0}" ]; then
   fi
   for i in *"${a0}"*; do
     if fEx_ "$i"; then
-      tmp_=$(echo "${a0}" | sed 's`[][\\/.*^$]`\\&`g')
-      tmp=$(echo "$i" | sed 's/'"$tmp_"'/'"${a1}"'/'${g_})
+      tmp_=$(echo "${a0}" | ${sed_} 's`[][\\/.*^$]`\\&`g')
+      tmp=$(echo "$i" | ${sed_} 's/'"$tmp_"'/'"${a1}"'/'${g_})
       if fEx_ "${tmp}"; then
         echo 'mv' "'$i'" "'${tmp}'" 'failed! Target already exists! SKIP!!!'
       else

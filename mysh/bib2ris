@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  sed_=`which gsed`
+else
+  sed_=`which sed`
+fi
+if test -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -23,7 +34,7 @@ while test $# -gt 0; do
     *)
       if test $# -gt 0; then
         bib="$1"
-	shift
+        shift
       fi
       ;;
   esac
@@ -43,8 +54,8 @@ else
   fi
 fi
 
-fxml=$(echo "$bib" | sed 's/.bib$/.xml/')
-fris=$(echo "$bib" | sed 's/.bib$/.ris/')
+fxml=$(echo "$bib" | ${sed_} 's/.bib$/.xml/')
+fris=$(echo "$bib" | ${sed_} 's/.bib$/.ris/')
 
 _b2x=`which bib2xml`
 _x2r=`which xml2ris`

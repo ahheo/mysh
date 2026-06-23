@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  sed_=`which gsed`
+else
+  sed_=`which sed`
+fi
+if test -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -61,11 +72,11 @@ if test -z "$doi" ; then
   exit 1
 fi
 
-doi=$(echo "$doi" | sed 's/https\?:\/\/doi.org\///')
+doi=$(echo "$doi" | ${sed_} 's/https\?:\/\/doi.org\///')
 o=$(curl -sLH "Accept: text/x-bibliography; style=${_s}; locale=${_l}" https://doi.org/"$doi")
 
 if test -z "$_d" ; then
-  o=$(echo "$o" | sed -E 's/(available at: |Portico. )?https?:\/\/doi.org\//DOI:/I')
+  o=$(echo "$o" | ${sed_} -E 's/(available at: |Portico. )?https?:\/\/doi.org\//DOI:/I')
 fi
 
 echo "$o"

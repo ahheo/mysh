@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which ggrep`
+else
+  grep_=`which grep`
+fi
+if test -z "$grep_" ; then
+  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
+  echo "ggrep is available through \"brew install grep\"!"
+  exit 1
+fi
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -32,9 +42,9 @@ while test $# -gt 0; do
 done
 
 if test "$v_" ; then
-  ${rec_} "${args_[@]}" | grep  "^bb.rec"
+  ${rec_} "${args_[@]}" | ${grep_}  "^bb.rec"
 fi
-b=$(${rec_} "${args_[@]}" | grep  -ioP "^[^%]\s*doi\s*=\s*{\K.*(?=\s*})")
+b=$(${rec_} "${args_[@]}" | ${grep_}  -ioP "^[^%]\s*doi\s*=\s*{\K.*(?=\s*})")
 
 if test -z "$b" ; then
   if test "$v_" ; then

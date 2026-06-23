@@ -22,7 +22,7 @@ while test $# -gt 0; do
     -b)
       shift
       if test $# -gt 0; then
-        pp=$1
+        pp="$1"
         shift
       else
         echo "no path specified; exit"
@@ -40,42 +40,50 @@ while test $# -gt 0; do
     esac
 done
 
-for i in ${pp}/${wd}/*;
+for i in "${pp}/${wd}/"*;
 do
-  if [ -f $i ]; then 
-    j=$wd/$(basename $i); 
-    if [ -f $j ]; then 
+  if [ -f "$i" ]; then 
+    j="$wd/"$(basename "$i"); 
+    if [ -f "$j" ]; then 
       if [ -n "$(diff -q $i $j)" ]; then 
-        if [[ ${yy} == yes ]]; then
-          echo "cp -a $i $j"
-	  cp -a $i $j
+        if [[ "${yy}" == yes ]]; then
+          echo "cp -a '$i' '$j'"
+          cp -a "$i" "$j"
         else
           echo ""
-	  echo "diff $i $j"
-          diff $i $j
-	  echo ""
+          echo "diff '$i' '$j'"
+          diff "$i" "$j"
+          echo ""
           read -p "${bold}Comfirm to replace file: $j (Y/n)?${normal}:" yn
-          echo ""	  
-	  case "${yn}" in
-            n|N|no|No|NO) echo ok, we move to next;
-              continue;;
-	    *) echo "cp -a $i $j" ;
-              cp -a $i $j ;;
+          echo ""
+          case "${yn}" in
+            n|N|no|No|NO)
+              echo "ok, we move to next"
+              continue
+              ;;
+            *)
+              echo "cp -a '$i' '$j'" ;
+              cp -a "$i" "$j"
+              ;;
           esac
         fi
       fi
     else
-      if [[ ${yy} == yes ]]; then
-        echo "cp -a $i $j"
-        cp -a $i $j
+      if [[ "${yy}" == yes ]]; then
+        echo "cp -a '$i' '$j'"
+        cp -a "$i" "$j"
       else
         read -p "${bold}Comfirm to add file: $j (Y/n)?${normal}:" yn
-        echo ""	
+        echo ""        
         case "${yn}" in
-          n|N|no|No|NO) echo ok, we move to next;
-            continue;;
-          *) echo "cp -a $i $j" ;
-            cp -a $i $j ;;
+          n|N|no|No|NO)
+            echo "ok, we move to next"
+            continue
+            ;;
+          *)
+            echo "cp -a '$i' '$j'"
+            cp -a "$i" "$j"
+            ;;
         esac
       fi
     fi

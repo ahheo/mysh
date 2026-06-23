@@ -7,14 +7,16 @@ else
   grep_=`which grep`
 fi
 if test -z "$grep_" ; then
-  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
-  echo "ggrep is available through \"brew install grep\"!"
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
   exit 1
 fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
 rsl="rsl.error.0000"
+_v=""
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -25,17 +27,29 @@ while test $# -gt 0; do
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
+      echo "-v                        more message"
       exit 0
+      ;;
+    -v)
+      _v=1
+      shift
       ;;
     *)
       if test $# -gt 0; then
-        rsl="$1"
+        if test -d "$1" ; then
+          rsl="$1/${rsl}"
+        else
+          rsl="$1"
+        fi
         shift
       fi
       ;;
   esac
 done
 
-if ! test -f "$rsl" ; then echo "File '${rsl}' does not exist!!! Exit!" ; exit 0 ; fi
+if ! test -f "$rsl" ; then 
+  if test "$_v" ; then echo "File '${rsl}' does not exist!!! Exit!" ; fi
+  exit 0
+fi
 
 tail "$rsl" | $grep_ -oP "\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}" | head -1

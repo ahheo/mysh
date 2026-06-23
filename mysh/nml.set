@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+#
+
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  grep_=`which ggrep`
+  sed_=`which gsed`
+else
+  grep_=`which grep`
+  sed_=`which sed`
+fi
+if test -z "$grep_" -o -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+me=$(basename "$0")
+nml="namelist.input"
+_s=""
+_g=""
+_p=""
+_v=""
+v_=""
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "${bold}$me - get information from a NMLFILE${normal}"
+      echo " "
+      echo "${bold}usage:${normal} $me [options] [NMLFILE]"
+      echo "        if NMLFILE not specified, namelist.input in the current directory will be used!"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-G GROUP                  specify group name (mandotory)"
+      echo "-P PARAM                  specify paramenter name (mandotory)"
+      echo "-V VALUE                  specify paramenter value (mandotory)"
+      echo "-s                        \"simulation\" mode; NMLFILE NOT changed on disk!"
+      echo "-v                        show more message"
+      echo " "
+      exit 0
+      ;;
+    -s)
+      _s=1
+      shift
+      ;;
+    -v)
+      v_=1
+      shift
+      ;;
+    -G)
+      shift
+      if test $# -gt 0; then
+        _g="$1"
+	shift
+      else
+        echo "no group name specified; exit!"
+	exit 1
+      fi
+      ;;
+    -P)
+      shift
+      if test $# -gt 0; then
+        _p="$1"
+	shift
+      else
+        echo "no parameter name specified; exit!"
+	exit 1
+      fi
+      ;;
+    -V)
+      shift
+      if test $# -gt 0; then
+        _v="$1"
+	shift
+      else
+        echo "no value specified; exit!"
+	exit 1
+      fi
+      ;;
+    *)
+      if test $# -gt 0; then
+        if test -d "$1" ; then
+          nml="$1/${nml}"
+        else
+          nml="$1"
+        fi
+        shift
+      fi
+      ;;
+  esac
+done
+
+if ! test -f "$nml" ; then echo "File '${nml}' does not exist!!! Exit!" ; exit 1 ; fi
+
+getblock_() {
+  local gg="$1"
+  sed -n "/^[[:space:]]*&\<${gg}\>/,/^[[:space:]]*\//p" "$nml" | sed -n "0,/^[^\!]*&end/p"
+  #                              1st, looking for "/"          |             next "&end"
+}
+
+getblockn_() {
+  local gg="$1"
+  ${grep_} -n "^[[:space:]]*&\<${gg}\>" "$nml" | head -1 | cut -d ":" -f1
+}
+
+getparams_() {
+  local ll="$1"
+  local pp="$2"
+  local vv="$3"
+  echo "$ll" | ${grep_} -o "\<$pp\>[[:space:]]*=[[:space:]]*$vv"
+}
+
+getparamv_() {
+  local ll="$1"
+  local pp="$2"
+  echo "$ll" | sed "s/&\<\w*\>//g; s/.*\<$pp\>[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,*[[:space:]]*$//"
+}
+
+getparaml_() {
+  local bb="$1"
+  local pp="$2"
+  echo "$bb" | sed "s/\!.*//" | ${grep_} "\<$pp\>[[:space:]]*=" | head -1
+}
+
+getparamn_() {
+  local bb="$1"
+  local pp="$2"
+  echo "$bb" | ${sed_} "s/\!.*//" | ${grep_} -n "\<$pp\>[[:space:]]*=" | head -1 | cut -d ":" -f1
+}
+
+if test "$_g" && test "$_p" && test "$_v"; then
+  _nml=$(basename "$nml")".copy"
+  cp "$nml" "${_nml}"
+  if test "$v_" ; then
+    echo "Temporary file '${_nml}' created!" 
+    echo ""
+  fi
+  _a=$(getblock_ "$_g")
+  if test -z "$_a" ; then
+    echo "block for \"${_g}\" not found! Exit!"
+    exit 1
+  fi
+  n0=$(getblockn_ "$_g")
+  n1=$(getparamn_ "$_a" "$_p")
+  if test "$v_" ; then
+    echo "block '${_g}' starts at line ${n0}"
+    echo "within block '${_g}', param '${_p}' starts at line ${n1}"
+    echo ""
+  fi
+  _n=$((n0+n1-1))
+  _ll=$(getparaml_ "$_a" "$_p")
+  _vv=$(getparamv_ "$_ll" "$_p")
+  _ss=$(getparams_ "$_ll" "$_p" "$_vv")
+  _ssn=$(echo "$_ss" | ${sed_} "s/${_vv}/${_v}/")
+  _lln=$(echo "$_ll" | ${sed_} "s/${_ss}/${_ssn}/")
+  if test "$v_" ; then
+    echo "Line #${_n} changed from:"
+    echo "    ${_ll}"
+    echo "to:"
+    echo "    ${_lln}"
+    echo ""
+  fi
+  ${sed_} -i "${_n}d" "${_nml}"
+  ${sed_} -i "${_n}i\\${_lln}" "${_nml}"
+  if test "$_s" ; then
+    cat "${_nml}"
+    rm "${_nml}"
+  else
+    mv "${_nml}" "${nml}"
+  fi
+else
+  echo "'-G GROUP -P PARAM -V VALUE' is mandotory!!!"
+  exit 1
+fi

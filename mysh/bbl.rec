@@ -6,10 +6,11 @@ else
   grep_=`which grep`
 fi
 if test -z "$grep_" ; then
-  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
-  echo "ggrep is available through \"brew install grep\"!"
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
   exit 1
 fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -35,12 +36,12 @@ while test $# -gt 0; do
       ;;
     *)
       if test $# -gt 0; then
-	if test "$key"; then
+        if test "$key"; then
           bib="$1"
         else
-	  key="$1"
-	fi
-	shift
+          key="$1"
+        fi
+        shift
       fi
       ;;
   esac
@@ -85,9 +86,9 @@ fi
 aln=$(cut -d ":" -f1 <<< "$a")
 #aan=$(${grep_} -i -n "@\w*" $bib | ${grep_} -i -A 1 "@\w*\s\?{\s\?$key\s\?," | cut -d ":" -f1 | tail -n1)
 aan=$(${grep_} -i -n -e '^\s*$' -e '\\\w*item\(\[\w*\]\)\?\s*{\s*'"$key"'\s*}' "$bib" |
-	${grep_} -i -A 1 -e '\\\w*item\(\[\w*\]\)\?\s*{\s*'"$key"'\s*}' |
-       	cut -d ":" -f1 |
-       	tail -n1)
+        ${grep_} -i -A 1 -e '\\\w*item\(\[\w*\]\)\?\s*{\s*'"$key"'\s*}' |
+               cut -d ":" -f1 |
+               tail -n1)
 
 if test $aln -eq $aan; then
   tail -n +"$aln" "$bib"

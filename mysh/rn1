@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  sed_=`which gsed`
+else
+  sed_=`which sed`
+fi
+if test -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -41,34 +52,34 @@ while test $# -gt 0; do
     -x|--ext)
       shift
       if test $# -gt 0; then
-        ext=$1
+        ext="$1"
         shift
       fi
       ;;
     --ext*)
-      ext=$(echo $1 | sed -e 's/^[^=]*=//g')
+      ext=$(echo "$1" | ${sed_} -e 's/^[^=]*=//g')
       shift
       ;;
     -p|--prefix)
       shift
       if test $# -gt 0; then
-        pre=$1
+        pre="$1"
         shift
       fi
       ;;
     --prefix*)
-      pre=$(echo $1 | sed -e 's/^[^=]*=//g')
+      pre=$(echo "$1" | ${sed_} -e 's/^[^=]*=//g')
       shift
       ;;
     -i|--ini)
       shift
       if test $# -gt 0; then
-        k=$1
+        k="$1"
         shift
       fi
       ;;
     --ini*)
-      k=$(echo $1 | sed -e 's/^[^=]*=//g')
+      k=$(echo "$1" | ${sed_} -e 's/^[^=]*=//g')
       shift
       ;;
     -v)
@@ -80,7 +91,7 @@ while test $# -gt 0; do
       shift
       ;;
     *)
-      wkd_=$1
+      wkd_="$1"
       shift
       ;;
   esac

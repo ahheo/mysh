@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 #
+if [[ "$(uname -s)" == *Darwin* ]] ; then
+  sed_=`which gsed`
+else
+  sed_=`which sed`
+fi
+if test -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
+  exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -23,12 +34,12 @@ while test $# -gt 0; do
     -g|--tag)
       shift
       if test $# -gt 0; then
-        tag=$1
+        tag="$1"
         shift
       fi
       ;;
     --tag*)
-      tag=$(echo $1 | sed -e 's/^[^=]*=//g')
+      tag=$(echo "$1" | ${sed_} -e 's/^[^=]*=//g')
       shift
       ;;
     -q)
@@ -37,11 +48,11 @@ while test $# -gt 0; do
       ;;
     *)
       if [ ${a1+1} ]; then
-        a2=$1
+        a2="$1"
       elif [ ${a0+1} ]; then
-        a1=$1
+        a1="$1"
       else
-        a0=$1
+        a0="$1"
       fi
       shift
       ;;

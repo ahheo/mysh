@@ -9,16 +9,18 @@ b=""
 q=""
 d2b_=`which doi2bib`
 brm_=`which bb.rm.rec`
+
 if [[ "$(uname -s)" == *Darwin* ]] ; then
   grep_=`which ggrep`
 else
   grep_=`which grep`
 fi
 if test -z "$grep_" ; then
-  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
-  echo "ggrep is available through \"brew install grep\"!"
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
   exit 1
 fi
+
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -47,11 +49,11 @@ while test $# -gt 0; do
       if test $# -gt 0; then
         if test -n "$doi" ; then
           bib="$1"
-	  shift
+          shift
         else
           doi="$1"
           shift
-	fi
+        fi
       fi
       ;;
   esac

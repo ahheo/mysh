@@ -3,14 +3,17 @@
 
 if [[ "$(uname -s)" == *Darwin* ]] ; then
   grep_=`which ggrep`
+  sed_=`which gsed`
 else
   grep_=`which grep`
+  sed_=`which sed`
 fi
-if test -z "$grep_" ; then
-  echo "We use ggrep instead of grep in Darwin system to assure \"-P\" support!"
-  echo "ggrep is available through \"brew install grep\"!"
+if test -z "$grep_" -o -z "$sed_" ; then
+  echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
+  echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
   exit 1
 fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 me=$(basename "$0")
@@ -29,11 +32,11 @@ while test $# -gt 0; do
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
-      echo "-g GROUP                  specify group name"
-      echo "-p PARAM                  specify paramenter name"
+      echo "-G GROUP                  specify group name"
+      echo "-P PARAM                  specify paramenter name"
       echo "-l                        '\$$me -l' will list group names in NMLFILE;"
-      echo "                          '\$$me -l -g GROUP' will show the block of GROUP;"
-      echo "                          without '-l', ' -g GROUP -p PARAM' is then mandotory and will "
+      echo "                          '\$$me -l -G GROUP' will show the block of GROUP;"
+      echo "                          without '-l', ' -G GROUP -P PARAM' is then mandotory and will "
       echo "                          show the value of PARAM under GROUP!"
       echo " "
       exit 0
@@ -42,29 +45,33 @@ while test $# -gt 0; do
       _l=1
       shift
       ;;
-    -g)
+    -G)
       shift
       if test $# -gt 0; then
         _g="$1"
-	shift
+        shift
       else
         echo "no group name specified; exit!"
-	exit 1
+        exit 1
       fi
       ;;
-    -p)
+    -P)
       shift
       if test $# -gt 0; then
         _p="$1"
-	shift
+        shift
       else
         echo "no parameter name specified; exit!"
-	exit 1
+        exit 1
       fi
       ;;
     *)
       if test $# -gt 0; then
-        nml="$1"
+        if test -d "$1" ; then
+          nml="$1/${nml}"
+        else
+          nml="$1"
+        fi
         shift
       fi
       ;;
@@ -75,14 +82,16 @@ if ! test -f "$nml" ; then echo "File '${nml}' does not exist!!! Exit!" ; exit 0
 
 getblock_() {
   local gg="$1"
-  sed -n "/^[[:space:]]*&\<${gg}\>/,/^[[:space:]]*\(&end\|\/\)/p" "$nml"
+  ${sed_} -n "/^[[:space:]]*&\<${gg}\>/,/^[[:space:]]*\//p" "$nml" | ${sed_} -n "0,/^[^\!]*&end/p"
+  #                                  1st, looking for "/"          |                 next "&end"
 }
 
 getparam_() {
   local bb="$1"
   local pp="$2"
-  #echo "$bb" | sed "s/\!.*//" | grep "\<$pp\>" | tail -1 | sed "s/&\<\w*\>//g; s/.*${pp}[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,[[:space:]]*$//"
-  echo "$bb" | sed "s/\!.*//" | grep "\<$pp\>" | sed "s/&\<\w*\>//g; s/.*${pp}[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,[[:space:]]*$//"
+  local ll=$(echo "$bb" | ${sed_} "s/\!.*//" | ${grep_} "\<$pp\>[[:space:]]*=")
+  #                                      |
+  echo "$ll" | ${sed_} "s/&\<\w*\>//g; s/.*\<${pp}\>[[:space:]]*=[[:space:]]*//; s/[^,=]*=.*//; s/,*[[:space:]]*$//"
 }
 
 if test "$_g" && test "$_p" ; then
@@ -105,9 +114,9 @@ if test "$_l" ; then
       echo "$a_"
     fi
   else
-    ${grep_} -oP "^[[:space:]]*&\K\w+" "$nml"
+    ${grep_} -oP "^[[:space:]]*&\K[^[:space:]]+" "$nml"
   fi
 else
-  echo 'without "-l", "-g GROUP -p PARAM" is then mandotory!!! Exit!'
+  echo 'without "-l", "-G GROUP -P PARAM" is then mandotory!!! Exit!'
   exit 1
 fi
