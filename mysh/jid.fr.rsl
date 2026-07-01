@@ -6,7 +6,7 @@ if [[ "$(uname -s)" == *Darwin* ]] ; then
 else
   grep_=`which grep`
 fi
-if test -z "$grep_" -o ; then
+if test -z "$grep_" ; then
   echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
   echo "ggrep/gsed is available through \"brew install grep\"/\"brew install sed\"!"
   exit 1

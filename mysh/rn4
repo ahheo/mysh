@@ -3,8 +3,10 @@
 
 if [[ "$(uname -s)" == *Darwin* ]] ; then
   sed_=`which gsed`
+  mv_="`which mv` -i"
 else
   sed_=`which sed`
+  mv_=`which mv`
 fi
 if test -z "$sed_" ; then
   echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
@@ -88,7 +90,7 @@ for i in [^._]*$([[ "${ext}" ]] && echo ".${ext}" || echo ''); do
       echo 'mv' "'$i'" "'${tmp}'"
     fi
     if [ -z "${s_}" ]; then
-      mv "./$i" "${tmp}"
+      ${mv_} "./$i" "${tmp}"
     fi
   fi
 done
