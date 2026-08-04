@@ -59,16 +59,12 @@ while test $# -gt 0; do
   esac
 done
 
-if test -z "$b" ; then
-  b="month"
-else
-  b="${b},month"
-fi
-
 if test -z "$doi" ; then
   if test -z "$q" ; then echo "$me: DOI is mandaroty but not specified!" ; fi
   exit 1
 fi
+
+doi=$(${sed_} "s/^https\?:\/\/doi\.org\///" <<< "$doi")
 
 if [[ "$doi" != "10."* ]] ; then
   if test -z "$q" ; then echo "$me: \"${doi}\" NOT a valid DOI specified!" ; fi
@@ -91,8 +87,19 @@ if test -z "$bib" ; then
   fi
 fi
 
-o=$(${d2b_} -x url,issn "$doi")
+if test -z "$b" ; then
+  b="url"
+fi
+
+o=$(${d2b_} -x "$b" "$doi")
+
 key=$(echo "$o" | ${grep_} -oP "^\s?\@\w+\s*{\s*\K\w+(?=\s*,)")
+if test -z "$key" ; then
+  if test -z "$q" ; then
+    echo "Deriving BIBREC for ${doi} failed!!! Exit..."
+  fi
+  exit 1
+fi
 ${brm_} "$key" "$bib"
 if test -z "$q" ; then
   echo "$o" | tee -a "$bib"
