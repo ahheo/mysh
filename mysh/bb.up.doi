@@ -12,8 +12,10 @@ brm_=`which bb.rm.rec`
 
 if [[ "$(uname -s)" == *Darwin* ]] ; then
   grep_=`which ggrep`
+  sed_=`which gsed`
 else
   grep_=`which grep`
+  sed_=`which sed`
 fi
 if test -z "$grep_" ; then
   echo "We use ggrep/gsed instead of grep/gsed in Darwin system following GNU style!"
